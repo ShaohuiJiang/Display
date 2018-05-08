@@ -21,8 +21,6 @@
 #define ChineseHintAreaGBKBufSize 20    //中文提示区字符GBK码缓存区的大小
 /*内部变量声明----------------------------------------------------------------*/
 ///添加内部变量
-//static unsigned char charisoverflow;            //字符超长，用于中文提示区
-//static unsigned char ChineseHintAreaCharBuf;    //中文提示区字符缓存区，
 static unsigned short ChineseHintAreaGBKBuf[ChineseHintAreaGBKBufSize];  //中文提示区字符GBK码缓存区
 static unsigned char  ChineseHintAreaGBKLen;                             //中文提示区有效GBK码数量
 /* 中文提示区LCD的备份缓存数组，用于左右滚动显示 大小是中文提示区缓存数组的2倍 */
@@ -32,128 +30,66 @@ static unsigned char  ChineseHintArea_RollDisplay;
 
 
 /*内部变量定义----------------------------------------------------------------*/
-///添加内部变量
-
 
 
 
 /*声明内部函数----------------------------------------------------------------*/
-///声明只在本文件使用的函数
-static void  Display_SplitScreen_Number(unsigned char number);
-
-static unsigned char  Get_InvalidZero_Number(unsigned char* buf,unsigned char len);
-
+static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len);
 static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* objbuf,unsigned char decimalpoint);
-
-//static void Clear_ChineseHintArea_LCDRAM_BackupBuf(void);
-//static void  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint,unsigned char* charnumberpoint);
-
-//static unsigned int GBK_to_CharBufAddress(unsigned short gbkcode,unsigned char* charbufaddress); 
-
 const unsigned char* Get_CharBufAddress(unsigned short gbkcode);
-//static void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit);
-//static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear);
+static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint);
 
-
-static unsigned char Fill_CurrentAndLastXMonth_In_ChineseHintArea(unsigned char startseg,unsigned char date);
-static unsigned char Fill_Phase_In_ChineseHintArea(unsigned char startseg,PHASE_TYPE phase);
-static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,ENERGY_TYPE engerytype);
-static unsigned char Fill_EngeryRate_In_ChineseHintArea(unsigned char startseg,unsigned char rate);
-static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engerytype,unsigned char date,unsigned char rate);
-static void Fill_CurrentDate_In_ChineseHintArea(void);
-static void Fill_CurrentTime_In_ChineseHintArea(void);
-static void Fill_RemainingAmount_In_ChineseHintArea(void);
-static void Fill_OverdraftAmount_In_ChineseHintArea(void);
-
-static void Fill_Value_In_NumberArea(unsigned char* valuepoint,unsigned char decimalpoint,PLUS_MINUS plusminus,HIGHZERO_TYPE displayhighzero);
-static void Fill_Date_In_NumberArea(unsigned char* datepoint);
-static void Fill_Time_In_NumberArea(unsigned char* timepoint);
-static void Fill_Amount_In_NumberArea(unsigned char* amountpoint,PLUS_MINUS plusminus,HIGHZERO_TYPE displayhighzero);
-
-static void Fill_Kwh_In_UnitArea(void);
-static void Fill_kvah_In_UnitArea(void);
-static void Fill_Yuan_In_UnitArea(void);
-
+static void Clear_ChineseHintArea_LCDRAM_BackupBuf(void);
+static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit);
+static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear);
+static void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset);
+static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen);
 
 /*定义内部函数----------------------------------------------------------------*/
-///定义只能在本文件使用的函数
-/** 
- * @brief  
- * @note   
- * @param  number: 
- * @retval None
- */
-static void Display_SplitScreen_Number(unsigned char number)
-{
-    unsigned int size;
-    unsigned char segpoint;
-    
-    #if (MeterType == ThreePhaseMeter)
-    size = Size_13P12P;
-    #else
-    size = Size_14P14P;
-    #endif   
-    
-    if(number>19)       //最多一个显示项允许有19屏
-    {
-        return;
-    }
-    segpoint = SplitWindowAreaStartseg;
-    #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&SplitScreenIcon_13p12p[number][0],size,display);   //分屏序号
-    #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&SplitScreenIcon_14p14p[number][0],size,display);   //分屏序号
-    #endif
-}
-
 /** 
  * @brief  获取数组中高位无效0的个数
  * @note   数组必须为BCD格式，并默认低字节数组存放低位数据
  * @param  buf: 被判断的数组起始地址
  * @param  len: 被判断的数据字节长度  0~10
- * @retval 无效0格式
+ * @retval 无效0个数
  */
-static unsigned char  Get_InvalidZero_Number(unsigned char* buf,unsigned char len)
+static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len)
 {
-        unsigned char temp;
-        unsigned char i;
-        unsigned char number;
+    unsigned char temp;
+    unsigned char i;
+    unsigned char number;
 
-        if(len>10)          //超长了，返回
+    if(len>10)          //超长了，返回
+    {
+        return 255;
+    }
+
+    number = 0;         //初始化
+
+    for(i=0;i<len;i++)          //拷贝最高位字节数据并判断是否为0，并循环
+    {
+        temp = *(buf+len-1-i); 
+        if((temp&0xf0) == 0x00)   //先判断高位：等于0，就无效0数加1，否则就直接返回
         {
-            return 255;
+        number++;
+        }
+        else                    //碰到非零，结束判断，并返回
+        {
+            return number;
+        }            
+        if((temp&0x0f) == 0x00)   //再判断低位：等于0，就无效0数加1，否则就直接返回
+        {
+            number++;
+        }
+        else                    //碰到非零，结束判断，并返回
+        {
+            return number;
         }
 
-        number = 0;
-
-        for(i=0;i<len;i++)          //拷贝最高位字节数据并判断是否为0，并循环
-        {
-            temp = *(buf+len-1-i); 
-  
-            if((temp&0xf0) == 0x00)   //先判断高位：等于0，就无效0数加1，否则就直接返回
-            {
-                number++;
-            }
-            else                    //碰到非零，结束判断，并返回
-            {
-
-                return number;
-            }            
-            if((temp&0x0f) == 0x00)   //再判断低位：等于0，就无效0数加1，否则就直接返回
-            {
-                number++;
-            }
-            else                    //碰到非零，结束判断，并返回
-            {
-
-                return number;
-            }
-
-        }
-
-        return number;              //循环完了，也返回
+    }
+    
+    return number;              //循环完了，也返回
 }
-
 /** 
  * @brief  调整4位小数的6字节数组保留的小数位复制到目标数组
  * @note   注意源数组的格式，必须满足6字节，并默认最低字节2个数组元素为小数
@@ -222,11 +158,79 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
     }   
 }
 /** 
+ * @brief  根据GBK码返回字符字库内容所在位置
+ * @note   
+ * @param  gbkcode: gbk码
+ * @retval 所在位置的指针
+ */
+const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
+{   
+    unsigned char i;
+
+    for(i=0;i<GBKNumber;i++)
+    {
+        if(gbkcode == charaddressbuf[i].CharGbk)
+        {
+            return charaddressbuf[i].CharAddress;
+        }
+    }
+    //找不到，就返回数字0的位置
+    #if (MeterType == ThreePhaseMeter)
+    return &ChineseHint_Char_6p12p[0][0];
+    #else
+    return &ChineseHint_Char_7p14p[0][0];    
+    #endif
+}
+/** 
+ * @brief   将字符串转化成GBK码
+ * @note   
+ * @param  strpoint: 字符串指针
+ * @param  gbkbufpoint: 转化成的GBK码存放数组的地址指针
+ * @retval GBK码数量
+ */
+static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint)
+{
+    unsigned char i;
+    unsigned char charnumberpoint=0;
+    
+    for(i=0;i<42;i++)           //赋值字符串的GBK代码解析并转存，同时反馈长度
+    {
+        if(*(strpoint+i) == 0)  //碰到\n 代表已经结束
+        {
+           return charnumberpoint;              //退出
+        }
+        else if(((*(strpoint+i))&0x80) == 0x80)      //最高位为1，代表是汉字编码一部分
+        {
+            i++;                            
+            if(((*(strpoint+i))&0x80) == 0x80)      //最高位为1，代表是汉字编码一部分
+            {
+               *gbkbufpoint =  (*(strpoint+i-1))*256+(*(strpoint+i));       //得到2字节的GBK码
+            }
+            else                           //前一个是汉字编码一部分，后一个不是，不符合规律，不解析
+            {
+                continue;                  //停止这一次，继续下一次循环
+            }            
+        }
+        else                              //最高位不是1，且不是\n 就代表是字母或者数字
+        {
+            *gbkbufpoint =  *(strpoint+i); //得到2字节的GBK码，高位字节为00
+        }        
+        //能执行到这里，说明一个字符解析成功
+        gbkbufpoint++;                      //GBK编码数组指针加1
+        charnumberpoint++;                  //有效字符数加1 
+    }
+
+    return charnumberpoint;              //退出
+
+}
+
+/*操作LCDRAM_BackupBuf数组函数------------------------*/
+/** 
  * @brief  清空中文提示区备份缓存数组内容
  * @note   
  * @retval None
  */
-extern void Clear_ChineseHintArea_LCDRAM_BackupBuf(void)
+static void Clear_ChineseHintArea_LCDRAM_BackupBuf(void)
 {
     unsigned short i,j;
 
@@ -237,19 +241,17 @@ extern void Clear_ChineseHintArea_LCDRAM_BackupBuf(void)
             ChineseHintArea_LCDRAM_BackupBuf[i][j] = 0;
         }
     }
-   
 }
-/*操作LCDRAM_BackupBuf数组函数------------------------*/
 /** 
  * @brief  LCDRAM_BackupBuf任意位置描点函数
  * @note   (x,y)位置的某点，显示或者不显示，
  * 注意，这个只是描了备用缓存区的点，最终显示需要调用其它函数将备用缓存区写到缓存区，再将缓存区数据写到LCD
  * @param  x: seg的位置
  * @param  y: com的位置
- * @param  bit: 0：不显示，1：显示
+ * @param  bit: 0：取反 1：正常
  * @retval None
  */
-extern  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit)
+static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit)
 {
     unsigned short pos;
     unsigned short bx;
@@ -280,8 +282,7 @@ extern  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigne
  * @param  displayorclear: clear代表清除，display代表显示
  * @retval None
  */
-
-extern  void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear)
+static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear)
 {
     unsigned char temp;
     unsigned short y0;
@@ -324,8 +325,14 @@ extern  void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x
         }
     }
 }
-
-extern void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset)
+/** 
+ * @brief  将ChineseHintArea_LCDRAM_BackupBuf拷贝到LCDRAM_Buf
+ * @note   ChineseHintArea_LCDRAM_BackupBuf的起始位置+offset开始拷贝到LCDRAM_Buf[ChineseHintAreaStartSeg~ChineseHintAreaStartSeg+len]
+ * @param  len: 拷贝的长度
+ * @param  offset: 偏移量
+ * @retval None
+ */
+static void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset)
 {
     unsigned short i;
     unsigned short j;
@@ -337,83 +344,18 @@ extern void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char le
             temp = ChineseHintArea_LCDRAM_BackupBuf[i+offset][j];  
             Wirte_LCDRAM_Buf((ChineseHintAreaStartSeg+i),(ChineseHintAreaStartPageCom+j),temp); 
         }
-
-    }    
+    }
 }
 /** 
- * @brief   将字符串转化成GBK码
- * @note   
- * @param  strpoint: 字符串指针
- * @param  gbkbufpoint: 转化成的GBK码存放数组的地址指针
- * @retval GBK码数量
+ * @brief  填充内容到中文提示区的缓存数组和备用数组
+ * @note   这里先写到备用缓存数组然后判断是否超过缓存数组大小，假如超过，就启用动态显示
+ * @param  strbuf: 字符串变量起始地址
+ * @param  SplitScreen: 分屏是否显示或者显示几号分屏
+ * @retval None
  */
-extern unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint)
+static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen)
 {
     unsigned char i;
-    unsigned char charnumberpoint=0;
-    
-    for(i=0;i<42;i++)           //赋值字符串的GBK代码解析并转存，同时反馈长度
-    {
-        if(*(strpoint+i) == 0)  //碰到\n 代表已经结束
-        {
-           return charnumberpoint;              //退出
-        }
-        else if(((*(strpoint+i))&0x80) == 0x80)      //最高位为1，代表是汉字编码一部分
-        {
-            i++;                            
-            if(((*(strpoint+i))&0x80) == 0x80)      //最高位为1，代表是汉字编码一部分
-            {
-               *gbkbufpoint =  (*(strpoint+i-1))*256+(*(strpoint+i));       //得到2字节的GBK码
-            }
-            else                           //前一个是汉字编码一部分，后一个不是，不符合规律，不解析
-            {
-                continue;                  //停止这一次，继续下一次循环
-            }            
-        }
-        else                              //最高位不是1，且不是\n 就代表是字母或者数字
-        {
-            *gbkbufpoint =  *(strpoint+i); //得到2字节的GBK码，高位字节为00
-        }        
-        //能执行到这里，说明一个字符解析成功
-        gbkbufpoint++;                      //GBK编码数组指针加1
-        charnumberpoint++;                  //有效字符数加1 
-    }
-
-    return charnumberpoint;              //退出
-
-}
-
-/** 
- * @brief  根据GBK码返回字符字库内容所在位置
- * @note   
- * @param  gbkcode: gbk码
- * @retval 所在位置的指针
- */
-const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
-{   
-    unsigned char i;
-
-    for(i=0;i<GBKNumber;i++)
-    {
-        if(gbkcode == charaddressbuf[i].CharGbk)
-        {
-            return charaddressbuf[i].CharAddress;
-        }
-    }
-    //找不到，就返回数字0的位置
-    #if (MeterType == ThreePhaseMeter)
-    return &ChineseHint_Char_6p12p[0][0];
-    #else
-    return &ChineseHint_Char_7p14p[0][0];    
-    #endif
-}
-
-
-extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen)
-{
-    unsigned char i;
-//    unsigned char j;
-//  unsigned char len;
     const unsigned char* addresspoint;
     unsigned short segpoint;
     unsigned char segendpoint;
@@ -421,7 +363,7 @@ extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     unsigned int size;
     
     //初始化
-    for(i=0;i<ChineseHintAreaGBKBufSize;i++)    
+    for(i=0;i<ChineseHintAreaGBKBufSize;i++)
     {
         ChineseHintAreaGBKBuf[i] = 0;   //GBK码缓存区清零
     }
@@ -430,19 +372,70 @@ extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     ChineseHintAreaGBKLen = 0;                      //有效GBK码数量清零
     Clear_ChineseHintArea_Of_LCDRAM_Buf();          //字模内容缓存区清零
     Clear_ChineseHintArea_LCDRAM_BackupBuf();      //字模内容备份缓存区清零
-    
 
-    
-    if(SplitScreen == NoDisplaySplitScreen)         //没有分屏，中文提示区就大，否则要去掉分屏区的范围
+    //判断分屏是否显示
+    switch(SplitScreen)
     {
-        segendpoint = ChineseHintAreaEndSeg;
+        case NoDisplaySplitScreen :
+        
+        break;
+            
+        case DisplaySplitScreenZero :
+            #if (MeterType == ThreePhaseMeter)
+            addresspoint = &SplitScreenIcon_13p12p[0][0];
+            size = Size_13P12P;
+            #else
+            addresspoint = &SplitScreenIcon_14p14p[0][0];
+            size = Size_14P14P;
+            #endif
+        break;
+
+        case DisplaySplitScreenOne :
+            #if (MeterType == ThreePhaseMeter)
+            addresspoint = &SplitScreenIcon_13p12p[1][0];
+            size = Size_13P12P;
+            #else
+            addresspoint = &SplitScreenIcon_14p14p[1][0];
+            size = Size_14P14P;
+            #endif
+        break;
+
+        case DisplaySplitScreenTwo :
+            #if (MeterType == ThreePhaseMeter)
+            addresspoint = &SplitScreenIcon_13p12p[2][0];
+            size = Size_13P12P;
+            #else
+            addresspoint = &SplitScreenIcon_14p14p[2][0];
+            size = Size_14P14P;
+            #endif
+        break;
+
+        case DisplaySplitScreenThree :
+            #if (MeterType == ThreePhaseMeter)
+            addresspoint = &SplitScreenIcon_13p12p[3][0];
+            size = Size_13P12P;
+            #else
+            addresspoint = &SplitScreenIcon_14p14p[3][0];
+            size = Size_14P14P;
+            #endif
+        break;
+
+        default:
+        break;
+    }
+    if(SplitScreen != NoDisplaySplitScreen)
+    {
+        /* 显示分屏 */
+        InputCharacter_to_LCDRAM_Buf(SplitWindowAreaStartseg,SplitWindowAreaStartCom,addresspoint,size,display);
+
+        segendpoint = SplitWindowAreaStartseg;      //确定中文提示区文字内容的结束seg地址
     }
     else
     {
-        segendpoint = SplitWindowAreaStartseg;
+        segendpoint = ChineseHintAreaEndSeg;        //确定中文提示区文字内容的结束seg地址
     }
 
-
+    //确定中文提示区文字内容
     #if (MeterType == ThreePhaseMeter)
     sizenumber = Size_6P12P;
     size = Size_12P12P;
@@ -451,18 +444,15 @@ extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     size = Size_14P14P;
     #endif
 
-    //得到有效GBK码和数量
-    ChineseHintAreaGBKLen = Get_GBKCodeOfStr(strbuf,ChineseHintAreaGBKBuf);
+    ChineseHintAreaGBKLen = Get_GBKCodeOfStr(strbuf,ChineseHintAreaGBKBuf);    //得到有效GBK码和数量
 
-    //先判断有效GBK码数量，默认支持ChineseHintAreaGBKBufSize个GBK码，如果超过，有可能Clear_LCDRAM_BackupBuf不够用，就要直接返回，不继续执行
-    if(ChineseHintAreaGBKLen>ChineseHintAreaGBKBufSize)
+    if(ChineseHintAreaGBKLen>ChineseHintAreaGBKBufSize) //先判断有效GBK码数量，默认支持ChineseHintAreaGBKBufSize个GBK码，如果超过，有可能Clear_LCDRAM_BackupBuf不够用，就要直接返回，不继续执行
     {
         return;
     }
     else            //没有超过，就将内容写到备用缓存数组中
     {
-       
-        segpoint =  0;
+        segpoint = 0;       //备用缓存数组是从起始地址开始写
         
         for(i=0;i<ChineseHintAreaGBKLen;i++)
         {
@@ -476,30 +466,225 @@ extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
             if((ChineseHintAreaGBKBuf[i]&0x8080) == 0x8080 )    //汉字
             {
                InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(segpoint,ChineseHintAreaStartCom,addresspoint,size,display);  
-
-               //InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,addresspoint,size,display);   
-               segpoint += size/100;    
+               segpoint += size/100;
             }
             else                                                //字母和数字
             {
-
                InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(segpoint,ChineseHintAreaStartCom,addresspoint,sizenumber,display);   
-               //InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,addresspoint,sizenumber,display);   
                segpoint += sizenumber/100;    
             }
         }  
 
         //将GBK全部转化成字模内容后，就要判断全部内容有没有超中文提示区范围，假如超了就要启用滚动显示
         Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf((segendpoint-ChineseHintAreaStartSeg),0);
-
-
         if(segpoint>=segendpoint)  //超了
         {
             ChineseHintArea_RollDisplay =1;     //启用滚动显示
         }
-
     }
 }
+/** 
+ * @brief  填充“当前组合有功总电量”或者“当前有功总电量”到中文提示区
+ * @note   不显示分屏
+ * @retval None
+ */
+static void Fill_CurrentCombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "当前组合有功总电量";
+    #else
+    str = "当前有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}
+/** 
+* @brief  填充“上1月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last1CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上1月组合有功总电量";
+    #else
+    str = "上1月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+
+
+/** 
+* @brief  填充“上2月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last2CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上2月组合有功总电量";
+    #else
+    str = "上2月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+
+
+/** 
+* @brief  填充“上3月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last3CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上3月组合有功总电量";
+    #else
+    str = "上3月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+
+
+/** 
+* @brief  填充“上4月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last4CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上4月组合有功总电量";
+    #else
+    str = "上4月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上5月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last5CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上5月组合有功总电量";
+    #else
+    str = "上5月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上6月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last6CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上6月组合有功总电量";
+    #else
+    str = "上6月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上7月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last7CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上7月组合有功总电量";
+    #else
+    str = "上7月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上8月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last8CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上8月组合有功总电量";
+    #else
+    str = "上8月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上9月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last9CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上9月组合有功总电量";
+    #else
+    str = "上9月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上10月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last10CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上10月组合有功总电量";
+    #else
+    str = "上10月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上11月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last11CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上11月组合有功总电量";
+    #else
+    str = "上11月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}     
+/** 
+* @brief  填充“上12月组合有功总电量”到中文提示区
+* @note   单相不显示“组合”
+* @retval None
+*/
+static void Fill_Last12CombinedActivePowerEnergyT0(void)
+{
+    unsigned char* str;
+    #if (MeterType == ThreePhaseMeter)
+    str = "上12月组合有功总电量";
+    #else
+    str = "上12月有功总电量";
+    #endif
+    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
+}
+
 
 /** 
  * @brief  填充“当前”或者“上x月”到中文提示区

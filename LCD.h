@@ -5,175 +5,175 @@
 * @date      : Thu Apr 12 2018
 * @brief     : 
 ********************************************************************************
-* @attention :Èç¹û±¾ÎÄ±¾ÖĞ´æÔÚºº×Ö±äÁ¿£¬ÎÄ±¾Òª×ª»¯³ÉGB2312±àÂë¸ñÊ½±£´æºÍ´ò¿ª
+* @attention :å¦‚æœæœ¬æ–‡æœ¬ä¸­å­˜åœ¨æ±‰å­—å˜é‡ï¼Œæ–‡æœ¬è¦è½¬åŒ–æˆGB2312ç¼–ç æ ¼å¼ä¿å­˜å’Œæ‰“å¼€
 *
 *
 */
-/* Ìõ¼ş±àÒë-------------------------------------------------------------------*/
+/* æ¡ä»¶ç¼–è¯‘-------------------------------------------------------------------*/
 #ifndef _LCD_H
 #define _LCD_H
 
-/*Í·ÎÄ¼ş---------------------------------------------------------------------*/
+/*å¤´æ–‡ä»¶---------------------------------------------------------------------*/
 #include "LCDConfig.h"
 
-/*ºê¶¨Òå---------------------------------------------------------------------*/
-/* LCDµÄµãÕóÊı */        
-#define com   80        //COMÊı
-#define seg   160       //¶ÎÊı
-#define Page  10        //COM×é³ÉµÄÒ³Êı
+/*å®å®šä¹‰---------------------------------------------------------------------*/
+/* LCDçš„ç‚¹é˜µæ•° */        
+#define com   80        //COMæ•°
+#define seg   160       //æ®µæ•°
+#define Page  10        //COMç»„æˆçš„é¡µæ•°
 
-#if (MeterType == ThreePhaseMeter)      //ÈıÏàÄ£Ê½
+#if (MeterType == ThreePhaseMeter)      //ä¸‰ç›¸æ¨¡å¼
 
-//×¢Òâ£ºÏóÏŞÇøºÍÖĞÎÄÌáÊ¾ÇøÔÚcomÉÏ¶¼ÊÇÖØµşµÄ£¬Ö»ÊÇseg·¶Î§²»Ò»Ñù
-/* ÏóÏŞÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£©12p */
+//æ³¨æ„ï¼šè±¡é™åŒºå’Œä¸­æ–‡æç¤ºåŒºåœ¨comä¸Šéƒ½æ˜¯é‡å çš„ï¼Œåªæ˜¯segèŒƒå›´ä¸ä¸€æ ·
+/* è±¡é™åŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰12p */
 #define QuadrantAreaStartCom 0
 #define QuadrantAreaEndCom   12
 
-/* ÏóÏŞÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©2byte*/
+/* è±¡é™åŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰2byte*/
 #define QuadrantAreaStartPageCom     0
 #define QuadrantAreaAreaEndPageCom   2
 
-/* ÏóÏŞÇøµÄSEGµØÖ··¶Î§ £¨Ç°±Õºó¿ª£©12p*/
+/* è±¡é™åŒºçš„SEGåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰12p*/
 #define QuadrantAreaStartSeg 0
 #define QuadrantAreaEndSeg   12
 
 #endif
 
 #if (MeterType == ThreePhaseMeter)
-/* ÖĞÎÄÌáÊ¾ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 12p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 12p*/
 #define ChineseHintAreaStartCom 0
 #define ChineseHintAreaEndCom   12
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©2bytes*/
+/* ä¸­æ–‡æç¤ºåŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰2bytes*/
 #define ChineseHintAreaStartPageCom 0
 #define ChineseHintAreaEndPageCom   2
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄSegµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 145p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„Segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 145p*/
 #define ChineseHintAreaStartSeg 15
 #define ChineseHintAreaEndSeg   seg
 
 #else      
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 14p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 14p*/
 #define ChineseHintAreaStartCom 0
 #define ChineseHintAreaEndCom   14
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©2bytes*/
+/* ä¸­æ–‡æç¤ºåŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰2bytes*/
 #define ChineseHintAreaStartPageCom 0
 #define ChineseHintAreaEndPageCom   2
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄSegµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 160p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„Segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 160p*/
 #define ChineseHintAreaStartSeg 0
 #define ChineseHintAreaEndSeg   160
 
 #endif
 
 
-#if (MeterType == ThreePhaseMeter)       //ÈıÏàÄ£Ê½
+#if (MeterType == ThreePhaseMeter)       //ä¸‰ç›¸æ¨¡å¼
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄ·ÖÆÁµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 12p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„åˆ†å±çš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 12p*/
 #define SplitWindowAreaStartCom 0
 #define SplitWindowAreaEndCom   12
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄ·ÖÆÁµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©2bytes*/
+/* ä¸­æ–‡æç¤ºåŒºçš„åˆ†å±çš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰2bytes*/
 #define SplitWindowAreaStartPageCom 0
 #define SplitWindowAreaEndPageCom   2
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄ·ÖÆÁsegµØÖ··¶Î§£¨Ç°±Õºó¿ª£©13p */
+/* ä¸­æ–‡æç¤ºåŒºçš„åˆ†å±segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰13p */
 #define SplitWindowAreaEndseg   seg
 #define SplitWindowAreaStartseg (SplitWindowAreaEndseg-13)
 
 #else
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 14p*/
+/* ä¸­æ–‡æç¤ºåŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 14p*/
 #define SplitWindowAreaStartCom 0
 #define SplitWindowAreaEndCom   14
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©2bytes*/
+/* ä¸­æ–‡æç¤ºåŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰2bytes*/
 #define SplitWindowAreaStartPageCom 0
 #define SplitWindowAreaEndPageCom   2
 
-/* ÖĞÎÄÌáÊ¾ÇøµÄ·ÖÆÁsegµØÖ··¶Î§£¨Ç°±Õºó¿ª£© */
+/* ä¸­æ–‡æç¤ºåŒºçš„åˆ†å±segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ */
 #define SplitWindowAreaEndseg  seg
 #define SplitWindowAreaStartseg (SplitWindowAreaEndseg-14)
 #endif
 
 
 
-#if (MeterType == ThreePhaseMeter)       //ÈıÏàÄ£Ê½
+#if (MeterType == ThreePhaseMeter)       //ä¸‰ç›¸æ¨¡å¼
 
-/* Êı×ÖÇøµÄCOMµØÖ··¶Î§ £¨Ç°±Õºó¿ª£©36p*/
+/* æ•°å­—åŒºçš„COMåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰36p*/
 #define NumberAreaStartCom      15
 #define NumberAreaEndCom        51
 
-/* Êı×ÖÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©6bytes*/
+/* æ•°å­—åŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰6bytes*/
 #define NumberAreaStartPageCom   1
 #define NumberAreaEndPageCom     7  
 
 #else
 
-/* Êı×ÖÇøµÄCOMµØÖ··¶Î§ £¨Ç°±Õºó¿ª£©36p*/
+/* æ•°å­—åŒºçš„COMåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰36p*/
 #define NumberAreaStartCom      16
 #define NumberAreaEndCom        52
 
-/* Êı×ÖÇøµÄÒ³µØÖ··¶Î§ £¨Ç°±Õºó¿ª£©5bytes*/
+/* æ•°å­—åŒºçš„é¡µåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰5bytes*/
 #define NumberAreaStartPageCom   2
 #define NumberAreaEndPageCom     7  
 
 #endif
 
-/* Êı×ÖÇøµÄSegµØÖ··¶Î§ £¨Ç°±Õºó¿ª£©160p*/
+/* æ•°å­—åŒºçš„Segåœ°å€èŒƒå›´ ï¼ˆå‰é—­åå¼€ï¼‰160p*/
 #define NumberAreaStartSeg      0
 #define NumberAreaEndSeg        seg
 
   
 
-/* ÖĞÎÄ±¨¾¯µÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 12p */
+/* ä¸­æ–‡æŠ¥è­¦çš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 12p */
 #define AlarmHintAreaStartCom     54
 #define AlarmHintAreaEndCom       66
 
-/* ÖĞÎÄ±¨¾¯ÇøµÄÒ³µØÖ··¶Î§£¨Ç°±Õºó¿ª£©3Byts */
+/* ä¸­æ–‡æŠ¥è­¦åŒºçš„é¡µåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰3Byts */
 #define AlarmHintAreaStartPageCom  6
 #define AlarmHintAreaEndPageCom    9
 
-/* ÖĞÎÄ±¨¾¯ÇøµÄSegµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 135p */
+/* ä¸­æ–‡æŠ¥è­¦åŒºçš„Segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 135p */
 #define AlarmHintAreaStartSeg     0
 #define AlarmHintAreaEndSeg      135
 
 
-/* µ¥Î»ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 12p */
+/* å•ä½åŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 12p */
 #define UnitAreaStartCom     54
 #define UnitAreaEndCom       66
 
-/* µ¥Î»ÇøµÄÒ³µØÖ··¶Î§£¨Ç°±Õºó¿ª£©3Byts */
+/* å•ä½åŒºçš„é¡µåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰3Byts */
 #define UnitAreaStartPageCom  6
 #define UnitAreaEndPageCom    9
 
-/* µ¥Î»ÇøµÄSegµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 25p */
+/* å•ä½åŒºçš„Segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 25p */
 #define UnitAreaStartSeg     135
 #define UnitAreaEndSeg       seg
 
 
 
-#if (MeterType == ThreePhaseMeter)       //ÈıÏàÄ£Ê½
+#if (MeterType == ThreePhaseMeter)       //ä¸‰ç›¸æ¨¡å¼
 
-/* ×Ö·û×´Ì¬ÌáÊ¾ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 11p */
+/* å­—ç¬¦çŠ¶æ€æç¤ºåŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 11p */
 #define StatusHintAreaStartCom       69
 #define StatusHintAreaEndCom         80
 
 #else
 
-/* ×Ö·û×´Ì¬ÌáÊ¾ÇøµÄCOMµØÖ··¶Î§£¨Ç°±Õºó¿ª£© 11p */
+/* å­—ç¬¦çŠ¶æ€æç¤ºåŒºçš„COMåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰ 11p */
 #define StatusHintAreaStartCom       68
 #define StatusHintAreaEndCom         79
 
 #endif
 
-/* ×Ö·û×´Ì¬ÌáÊ¾ÇøÇøµÄÒ³µØÖ··¶Î§£¨Ç°±Õºó¿ª£©2bytes */
+/* å­—ç¬¦çŠ¶æ€æç¤ºåŒºåŒºçš„é¡µåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰2bytes */
 #define StatusHintAreaStartPageCom    8
 #define StatusHintAreaEndPageCom      10
 
-/* ×Ö·û×´Ì¬ÌáÊ¾ÇøµÄSegµØÖ··¶Î§£¨Ç°±Õºó¿ª£©  */
+/* å­—ç¬¦çŠ¶æ€æç¤ºåŒºçš„Segåœ°å€èŒƒå›´ï¼ˆå‰é—­åå¼€ï¼‰  */
 #define StatusHintAreaStartSeg        0
 #define StatusHintAreaEndSeg          seg
 
@@ -183,70 +183,64 @@
 
 
 
-/*ÉùÃ÷Íâ²¿º¯Êı----------------------------------------------------------------*/
+/*å£°æ˜å¤–éƒ¨å‡½æ•°----------------------------------------------------------------*/
 
-/* LCDµÄÅäÖÃ³õÊ¼»¯º¯Êı£¬È·±£µ÷ÓÃ¸Ãº¯ÊıÇ°£¬LCD_GPIO_InitÒÑ¾­±»Ö´ĞĞ¹ı */
-extern void LCD_Config_Init(void);
-
-/* ÉèÖÃLCDµÄID£¬²»ÖªµÀÓÃÀ´¸ÉÂğ£¿ */
-extern void Set_OTP_Register(void);
-
-/* LCDµÄ×Ü³õÊ¼»¯º¯Êı£¬¼¯ºÏÁË¹Ü½Å³õÊ¼»¯¡¢ÅäÖÃ³õÊ¼»¯ºÍÉèÖÃID£» */
+/* LCDçš„æ€»åˆå§‹åŒ–å‡½æ•°ï¼Œé›†åˆäº†ç®¡è„šåˆå§‹åŒ–ã€é…ç½®åˆå§‹åŒ–å’Œè®¾ç½®IDï¼› */
 extern void LCD_Init(void);
 
-/* ¹Ø±ÕµãÕóÒº¾§£¬Í¬Ê±¸´Î»½ÅÖÃµÍ */
+/* å…³é—­ç‚¹é˜µæ¶²æ™¶ï¼ŒåŒæ—¶å¤ä½è„šç½®ä½ */
 extern void Closed_LCD(void);
 
-/* ÍùLCDRAM_BUfµÄÖ¸¶¨Î»ÖÃÏÔÊ¾»òÕßÇå³ıÒ»¸ö×Ö·û(°üÀ¨ºº×Ö¡¢×ÖÄ¸¡¢Êı×Ö¡¢·ûºÅ) */
+/* å¾€LCDRAM_BUfçš„æŒ‡å®šä½ç½®æ˜¾ç¤ºæˆ–è€…æ¸…é™¤ä¸€ä¸ªå­—ç¬¦(åŒ…æ‹¬æ±‰å­—ã€å­—æ¯ã€æ•°å­—ã€ç¬¦å·) */
 //extern void InputCharacter_to_LCDRAM_Buf(unsigned char x,unsigned char y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear);
 extern void InputCharacter_to_LCDRAM_Buf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear);
 
-/* LCDRAM_BufÊı×éÇåÁã */
+/* LCDRAM_Bufæ•°ç»„æ¸…é›¶ */
 extern void Clear_LCDRAM_Buf(void);
 
 #if (MeterType == ThreePhaseMeter)
-/* Çå³ıLCDRAM_BufÊı×éµÄÏóÏŞÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„è±¡é™åŒºçš„å†…å®¹ */
 extern void Clear_QuadrantArea_Of_LCDRAM_Buf(void);
 #endif 
 
-/* Çå³ıLCDRAM_BufÊı×éÖĞÖ¸¶¨·¶Î§ÄÚµÄÊı¾İ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„ä¸­æŒ‡å®šèŒƒå›´å†…çš„æ•°æ® */
 //extern void Clear_PartArea_of_LCDRAM_Buf(unsigned char x1,unsigned char y1,unsigned char x2,unsigned char y2);
 extern void Clear_PartArea_of_LCDRAM_Buf(unsigned short x1,unsigned short y1,unsigned short x2,unsigned short y2);
-/* Çå³ıLCDRAM_BufÊı×éµÄÖĞÎÄÌáÊ¾ÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„ä¸­æ–‡æç¤ºåŒºçš„å†…å®¹ */
 extern void Clear_ChineseHintArea_Of_LCDRAM_Buf(void);
 
-/* Çå³ıLCDRAM_BufÊı×éµÄÊı×ÖÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„æ•°å­—åŒºçš„å†…å®¹ */
 extern void Clear_NumberArea_Of_LCDRAM_Buf(void);
 
-/* Çå³ıLCDRAM_BufÊı×éµÄ±¨¾¯ÌáÊ¾ÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„æŠ¥è­¦æç¤ºåŒºçš„å†…å®¹ */
 extern void Clear_AlarmHintArea_Of_LCDRAM_Buf(void);
 
-/* Çå³ıLCDRAM_BufÊı×éµÄµ¥Î»ÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„å•ä½åŒºçš„å†…å®¹ */
 extern void Clear_UnitArea_Of_LCDRAM_Buf(void);
 
-/* Çå³ıLCDRAM_BufÊı×éµÄ×´Ì¬ÌáÊ¾ÇøµÄÄÚÈİ */
+/* æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„çŠ¶æ€æç¤ºåŒºçš„å†…å®¹ */
 extern void Clear_StatusHintArea_Of_LCDRAM_Buf(void);
 
-/* Ë¢ĞÂLCDÕûÆÁµÄÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDæ•´å±çš„æ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_LCD_DDRAM(void);
 
 #if (MeterType == ThreePhaseMeter)
-/* Ë¢ĞÂLCDµÄÏóÏŞÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„è±¡é™åŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_QuadrantArea_of_LCD_DDRAM(void);
 #endif 
 
-/* Ë¢ĞÂLCDµÄÖĞÎÄÌáÊ¾ÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„ä¸­æ–‡æç¤ºåŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_ChineseHintArea_of_LCD_DDRAM(void);
 
-/* Ë¢ĞÂLCDµÄÊı×ÖÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„æ•°å­—åŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_NumberArea_of_LCD_DDRAM(void);
 
-/* Ë¢ĞÂLCDµÄ±¨¾¯ÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„æŠ¥è­¦åŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_AlarmHintArea_of_LCD_DDRAM(void);
 
-/* Ë¢ĞÂLCDµÄµ¥Î»ÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„å•ä½åŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_UnitArea_of_LCD_DDRAM(void);
-/* Ë¢ĞÂLCDµÄ×´Ì¬ÇøÏÔÊ¾ÄÚÈİ */
+/* åˆ·æ–°LCDçš„çŠ¶æ€åŒºæ˜¾ç¤ºå†…å®¹ */
 extern void Refresh_StatusHintArea_of_LCD_DDRAM(void);
 
 extern void Wirte_LCDRAM_Buf(unsigned short x, unsigned short y, unsigned char Buf);

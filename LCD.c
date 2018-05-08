@@ -5,36 +5,38 @@
 * @date      : Thu Apr 12 2018
 * @brief     : 
 ********************************************************************************
-* @attention :Èç¹û±¾ÎÄ±¾ÖĞ´æÔÚºº×Ö±äÁ¿£¬ÎÄ±¾Òª×ª»¯³ÉGB2312±àÂë¸ñÊ½±£´æºÍ´ò¿ª
+* @attention :å¦‚æœæœ¬æ–‡æœ¬ä¸­å­˜åœ¨æ±‰å­—å˜é‡ï¼Œæ–‡æœ¬è¦è½¬åŒ–æˆGB2312ç¼–ç æ ¼å¼ä¿å­˜å’Œæ‰“å¼€
 *
 *
 */
-/*Í·ÎÄ¼ş----------------------------------------------------------------------*/
-///Ìí¼ÓÍ·ÎÄ¼ş
+/*å¤´æ–‡ä»¶----------------------------------------------------------------------*/
+///æ·»åŠ å¤´æ–‡ä»¶
 #include "LCD.h" 
 #include "CharLib.h"
 #include "LCDConfig.h"
-/*ºê¶¨Òå----------------------------------------------------------------------*/
+/*å®å®šä¹‰----------------------------------------------------------------------*/
 
-/*ÄÚ²¿±äÁ¿ÉùÃ÷----------------------------------------------------------------*/
-/* LCDµÄ»º´æÊı×é */
+/*å†…éƒ¨å˜é‡å£°æ˜----------------------------------------------------------------*/
+/* LCDçš„ç¼“å­˜æ•°ç»„ */
 static unsigned char LCDRAM_Buf[seg][Page];
 
-/*ÉùÃ÷ÄÚ²¿º¯Êı----------------------------------------------------------------*/
+/*å£°æ˜å†…éƒ¨å‡½æ•°----------------------------------------------------------------*/
 static void Delay_Nms(unsigned int n);
 static void SendByte(unsigned char Dbyte);
 static void Writecom(unsigned char wcom);
 static void Writedata(unsigned char wdata);
- //¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯ static unsigned char Readcom(void);
- //¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯ static void Clear_ICON_DDRAM(void);
- //¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯ static void OTP_Write(void);
+static void Set_OTP_Register(void);
+static void LCD_Config_Init(void);
+ //è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦ static unsigned char Readcom(void);
+ //è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦ static void Clear_ICON_DDRAM(void);
+ //è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦ static void OTP_Write(void);
 static void window(void);
 static void set_window_area(unsigned short startseg,unsigned short startpage,unsigned short endseg,unsigned short endpage);
 static void LCDRAM_Buf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit);
-/*¶¨ÒåÄÚ²¿º¯Êı----------------------------------------------------------------*/
+/*å®šä¹‰å†…éƒ¨å‡½æ•°----------------------------------------------------------------*/
 
  /** 
-  * @brief  ºÁÃë¼¶ÑÓÊ±
+  * @brief  æ¯«ç§’çº§å»¶æ—¶
   * @note   
   * @param  n: 0~65565
   * @retval None
@@ -46,11 +48,11 @@ static void Delay_Nms(unsigned int n)
     for(j=0;j<1000;j++);
 }
 
-/*ÄÚ²¿£ºLCDÍ¨ĞÅº¯Êı------------------------*/
+/*å†…éƒ¨ï¼šLCDé€šä¿¡å‡½æ•°------------------------*/
 /** 
- * @brief  ÏòLCD·¢ËÍÒ»¸ö×Ö½Ú
- * @note   ×Ö½Ú¿ÉÄÜÊÇÃüÁîÒ²¿ÉÄÜÊÇÊı¾İ£¬¿´Ê¹ÓÃ»·¾³
- * @param  Dbyte: Ò»¸ö×Ö½Ú
+ * @brief  å‘LCDå‘é€ä¸€ä¸ªå­—èŠ‚
+ * @note   å­—èŠ‚å¯èƒ½æ˜¯å‘½ä»¤ä¹Ÿå¯èƒ½æ˜¯æ•°æ®ï¼Œçœ‹ä½¿ç”¨ç¯å¢ƒ
+ * @param  Dbyte: ä¸€ä¸ªå­—èŠ‚
  * @retval None
  */
 static void SendByte(unsigned char Dbyte)
@@ -70,7 +72,7 @@ static void SendByte(unsigned char Dbyte)
             SDA_High();
         }
         else
-            SDA_Low();      //ÒÆ³öµÄÎ»¸øSDA
+            SDA_Low();      //ç§»å‡ºçš„ä½ç»™SDA
         
         SCK_High();	
         SCK_Low();	
@@ -78,9 +80,9 @@ static void SendByte(unsigned char Dbyte)
 }
 
 /** 
- * @brief  ÏòLCD·¢ËÍÒ»¸ö×Ö½ÚÃüÁî
+ * @brief  å‘LCDå‘é€ä¸€ä¸ªå­—èŠ‚å‘½ä»¤
  * @note   
- * @param  wcom: Ò»¸ö×Ö½ÚÃüÁî
+ * @param  wcom: ä¸€ä¸ªå­—èŠ‚å‘½ä»¤
  * @retval None
  */
 static void Writecom(unsigned char wcom)
@@ -92,9 +94,9 @@ static void Writecom(unsigned char wcom)
 }
 
 /** 
- * @brief  ÏòLCD·¢ËÍÒ»¸ö×Ö½ÚÊı¾İ
+ * @brief  å‘LCDå‘é€ä¸€ä¸ªå­—èŠ‚æ•°æ®
  * @note   
- * @param  wdata: Ò»¸ö×Ö½ÚÊı¾İ
+ * @param  wdata: ä¸€ä¸ªå­—èŠ‚æ•°æ®
  * @retval None
  */
 static void Writedata(unsigned char wdata)
@@ -106,17 +108,17 @@ static void Writedata(unsigned char wdata)
 }
 
 /** 
- * @brief  ´ÓLCD¶ÁÒ»¸ö×Ö½ÚÊı¾İ
+ * @brief  ä»LCDè¯»ä¸€ä¸ªå­—èŠ‚æ•°æ®
  * @note   
- * @retval ¶Áµ½µÄÊı¾İ
+ * @retval è¯»åˆ°çš„æ•°æ®
  */
-/*¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯
+/*è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦
 static unsigned char Readcom(void)
 {	
     unsigned char i,L0;
 	L0=0;
 	Writecom(0x38);     	
-    Writecom(0x7F);     	//Ê¹ÄÜ¶ÁID
+    Writecom(0x7F);     	//ä½¿èƒ½è¯»ID
 	Writecom(0x30);     	
 
 	CS_Low();
@@ -148,11 +150,11 @@ static unsigned char Readcom(void)
 }
 */
 /** 
- * @brief  Çå³ıLCDÖĞICON RAMÇøµÄÄÚÈİ£¬²¢½ûÖ¹ICON RAM
+ * @brief  æ¸…é™¤LCDä¸­ICON RAMåŒºçš„å†…å®¹ï¼Œå¹¶ç¦æ­¢ICON RAM
  * @note   
  * @retval None
  */
- /*¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯
+ /*è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦
 static void Clear_ICON_DDRAM(void)
 {
     unsigned char j;
@@ -171,11 +173,11 @@ static void Clear_ICON_DDRAM(void)
 }
 */
 /** 
- * @brief  Ö´ĞĞÒÔÏÂÃüÁî£¬ÉÕOTPºÍID
- * @note   ¾ßÌå×÷ÓÃÒ²²»ÊÇºÜÇå³ş£¬¹À¼ÆÒªÎÊÒº¾§³§¼Ò
+ * @brief  æ‰§è¡Œä»¥ä¸‹å‘½ä»¤ï¼Œçƒ§OTPå’ŒID
+ * @note   å…·ä½“ä½œç”¨ä¹Ÿä¸æ˜¯å¾ˆæ¸…æ¥šï¼Œä¼°è®¡è¦é—®æ¶²æ™¶å‚å®¶
  * @retval None
  */
- /*¸Ãº¯ÊıÃ»ÓĞÓÃµ½£¬ÏÈÆÁ±Î£¬±ÜÃâ±àÒëÆ÷¸æ¾¯
+ /*è¯¥å‡½æ•°æ²¡æœ‰ç”¨åˆ°ï¼Œå…ˆå±è”½ï¼Œé¿å…ç¼–è¯‘å™¨å‘Šè­¦
 static void OTP_Write(void)   
 {    
     Writecom(0x30);  // Extension Command 1 
@@ -205,9 +207,151 @@ static void OTP_Write(void)
     Writecom(0x30);  // Extension Command 1 
 } 
 */
-/*ÄÚ²¿£ºÉèÖÃLCDĞ¾Æ¬ÏÔÊ¾ÇøË¢ĞÂ·¶Î§º¯Êı------------------------*/
+
 /** 
- * @brief  ¶¨ÒåLCDµÄËùÓĞDDRAMÇøÓò¶¼¿ÉĞ´
+ * @brief  è®¾ç½®ID
+ * @note   IDç”¨æ¥å¹²ä»€ä¹ˆä¸æ¸…æ¥šï¼Œä¼°è®¡è¦é—®æ¶²æ™¶å‚å®¶
+ * @retval None
+ */
+
+static void Set_OTP_Register(void)   
+{   
+    Writecom(0x38);  // Extension Command 3 
+    Writecom(0xD5);  // Set ID=3
+    Writedata(0x03);   
+}
+/** 
+ * @brief  LCDé…ç½®åˆå§‹åŒ–
+ * @note   è¯¥å‡½æ•°è°ƒç”¨å‰ï¼Œç¡®ä¿LCDæ“æ§ç®¡è„šå·²ç»é…ç½®åˆ°ä½
+ * @retval None
+ */
+static void LCD_Config_Init(void)
+{
+	int Data = 0;
+    
+    ///å¤ä½LCDé©±åŠ¨èŠ¯ç‰‡
+    RST_Low();
+    Delay_Nms(20);
+    RST_High();
+    Delay_Nms(20);
+ 
+    ///æ‰©å±•å‘½ä»¤2é‡Œçš„å‘½ä»¤è®¾ç½®
+    Writecom(0x31); // Extension Command 2
+    ////OTPè‡ªåŠ¨è¯»å–çš„çŠ¶æ€å…³é—­ï¼Ÿï¼Ÿ
+    Writecom(0xD7); // Disable Auto Read
+    Writedata(0x9F);
+    ////ä½¿èƒ½OTPè¯»çŠ¶æ€ï¼Ÿï¼Ÿ
+    Writecom(0xE0); // Enable OTP Read
+    Writedata(0x00);
+    Delay_Nms(20);
+    
+    ////è§¦å‘OTPç¼–ç¨‹è¿‡ç¨‹ï¼Ÿï¼Ÿ
+    Writecom(0xE3); // OTP Up-Load
+    Delay_Nms(20);
+    ////å–æ¶ˆOTPæ§åˆ¶
+    Writecom(0xE1); // OTP Control Out
+    
+    ///æ‰©å±•å‘½ä»¤1çš„å‘½ä»¤è®¾ç½®
+    Writecom(0x30); // Extension Command 1
+    ////é€€å‡ºä¼‘çœ çŠ¶æ€
+    Writecom(0x94); // Sleep Out
+    ////å…³é—­æ˜¾ç¤º
+    Writecom(0xAE); // Display OFF
+    Delay_Nms(50);
+    ////æ‰“å¼€å‡å‹ç”µè·¯
+    Writecom(0x20); //Power Control
+    Writedata(0x0B); // VB, VR,VF All ON
+    Delay_Nms(100);
+    ////è®¾ç½®Vopç”µå‹å€¼
+    Writecom(0x81); // Set Vop = 14.0V
+    Writedata(0x04);
+    Writedata(0x04);
+
+    // Frame Rateï¼ˆå¸§ç‡ï¼‰
+    ///æ‰©å±•å‘½ä»¤2é‡Œçš„å‘½ä»¤è®¾ç½®
+    Writecom(0x31);   // Extension Command 2
+    ////è®¾ç½®ä¸åŒæ¸©åº¦ä¸‹çš„å¸§ç‡
+    Writecom(0XF0);   // Frame Rate
+    Writedata(0x02);  // 34.5Hz  //ä½æ¸©-30  -40æ•ˆæœæœ€ä½³ï¼ˆ-40~TAï¼‰
+    Writedata(0x06);  // 46(TA~TB)
+    Writedata(0x14);  // 83(TB~TC)
+    Writedata(0x1c);  // 138(TC~90)
+    ////TA/TB/TCçš„æ¸©åº¦ç‚¹
+    Writecom(0XF2);   // Temperature Range
+    Writedata(0x06);  // -34Cï¼ˆTAï¼‰
+    Writedata(0x1c);  // -12C (TB)
+    Writedata(0x50);  //  40C (TC)
+    
+    //Temperature Gradient Compensation(æ¸©åº¦æ¢¯åº¦è¡¥å¿ç³»æ•°)
+    Writecom(0xf4);
+    Writedata(0x10) ;  //ä½æ¸©-30  -40æ•ˆæœæœ€ä½³ å¸¸æ¸©ä¸‹ VOP=12.7V(C9ä¸¤ç«¯)
+    Writedata(0x11);  //ä½æ¸©-30  -40æ•ˆæœæœ€ä½³
+    Writedata(0x00);
+    Writedata(0x00);
+    Writedata(0x00);
+    Writedata(0x11);
+    Writedata(0x51);
+    Writedata(0x35);
+
+    ///æ‰©å±•å‘½ä»¤2é‡Œçš„å‘½ä»¤è®¾ç½®
+    Writecom(0x31); // Extension Command 2
+    ////è¯¥æŒ‡ä»¤ç”¨äºè®¾ç½®å¢å¼ºå™¨æ•ˆç‡å’Œåç½®æ¯”ã€‚
+    Writecom(0x32); // Analog Circuit Set
+    Writedata(0x00);
+    Writedata(0x01); // Booster Efficiency =Level1
+    Writedata(0x04); //Bias=1/10
+	////è¯¥æŒ‡ä»¤ç”¨äºæ§åˆ¶å†…ç½®å‡å‹ç”µè·¯ä»¥æä¾›å†…ç½®ç¨³å‹å™¨çš„ç”µæº					
+    Writecom(0x51); // Booster Level x10
+    Writedata(0xFB);
+    
+	///æ‰©å±•å‘½ä»¤2é‡Œçš„å‘½ä»¤è®¾ç½®					
+    Writecom(0x30); // Extension Command 1
+    ///è¯¥æŒ‡ä»¤å®šä¹‰æ˜¾ç¤ºæ¨¡å¼ä¸ºç°åº¦æ¨¡å¼æˆ–å•è‰²æ¨¡å¼ï¼Œå®šä¹‰ä¸ºå•è‰²æ¨¡å¼
+    Writecom(0xF0); //Display Mode
+    Writedata(0x10); //Mono Mode
+    ///è®¾ç½®æ˜¾ç¤ºæ§åˆ¶
+    Writecom(0xCA); //Display Control
+    Writedata(0x00); // CL Dividing Ratio => Not Divide//è®¾ç½®CLåˆ†å‰²æ¯”ä¾‹
+    Writedata(0X4F); //Duty Set => 80 Duty//
+    Writedata(0x00); //Frame Inversion
+						
+    Writecom(0xBC); // Data Scan Directionï¼ˆè®¾ç½®æ‰«ææ–¹å‘ï¼‰
+    Writedata(0x02);//00 ä¸ 02 æ‰«æé¡ºåº//00æ˜¯ä»å·¦å¾€å³ï¼Œä»ä¸Šå¾€ä¸‹ï¼Œ02æ˜¯ä»å³å¾€å·¦ï¼Œä»ä¸Šå¾€ä¸‹
+    Writecom(0xA6); // Normal Display//æ­£å¸¸æ˜¾ç¤º
+            
+    Writecom(0x31); //Extension Command 2
+    Writecom(0x40); //Internal Power Supplyï¼ˆå†…éƒ¨ç”µæºï¼‰
+    Writecom(0x30); // Extension Command 1
+
+    // icon clearï¼ˆå›¾æ ‡ramåŒºæ¸…é›¶ï¼‰
+    Writecom(0x77); // Enable ICON RAM
+    Writecom(0x5C);
+    for(Data = 0; Data <= 255; Data++)
+    {
+        Writedata(0);
+    }
+    
+    Writecom(0x76); // Disable ICON RAMï¼ˆç¦æ­¢å›¾æ ‡ramï¼‰
+
+    Writecom(0x30); //Extension Command 1
+    ////è®¾ç½®å¯è®¿é—®çš„åˆ—åœ°å€çš„åŒºåŸŸ
+    Writecom(0x15); // Column Address Setting
+    Writedata(0x00); // SEG0 -> SEG159
+    Writedata(0x9F);
+    ////è®¾ç½®å¯è®¿é—®çš„é¡µåœ°å€çš„åŒºåŸŸ
+    Writecom(0x75); // Row Address Setting
+    Writedata(0x00); // COM0 -> COM59
+    Writedata(0x13);
+    
+    //æ¸…ç©ºè‡ªå·±å®šä¹‰çš„ç¼“å­˜åŒºï¼Œä¹Ÿæ¸…ç©ºLCDçš„DDRAM
+    Clear_LCDRAM_Buf();
+    Refresh_LCD_DDRAM();
+    Writecom(0xAF); // Display ONï¼ˆæ‰“å¼€æ˜¾ç¤ºï¼‰
+}
+
+/*å†…éƒ¨ï¼šè®¾ç½®LCDèŠ¯ç‰‡æ˜¾ç¤ºåŒºåˆ·æ–°èŒƒå›´å‡½æ•°------------------------*/
+/** 
+ * @brief  å®šä¹‰LCDçš„æ‰€æœ‰DDRAMåŒºåŸŸéƒ½å¯å†™
  * @note   
  * @retval None
  */
@@ -225,12 +369,12 @@ static void window(void)
 }
 
 /** 
- * @brief  ÉèÖÃ¿ÉĞ´DDRAMÇøÓò
- * @note   Í¨¹ıÕâ¸öº¯Êı¶ÔÓ¦ÍùLCDĞ´µÄµÚÒ»¸öÊı¾İÊÇ¶ÔÓ¦Òº¾§µÄÄÄÀï£¬ÁíÍâ·¶Î§ÊÇÇ°±Õºó¿ª
- * @param  startseg: ÆğÊ¼ÁĞµØÖ·
- * @param  startpage: ÆğÊ¼Ò³µØÖ·
- * @param  endseg: ½áÊøÁĞµØÖ·
- * @param  endpage: ½áÊøÒ³µØÖ·
+ * @brief  è®¾ç½®å¯å†™DDRAMåŒºåŸŸ
+ * @note   é€šè¿‡è¿™ä¸ªå‡½æ•°å¯¹åº”å¾€LCDå†™çš„ç¬¬ä¸€ä¸ªæ•°æ®æ˜¯å¯¹åº”æ¶²æ™¶çš„å“ªé‡Œï¼Œå¦å¤–èŒƒå›´æ˜¯å‰é—­åå¼€
+ * @param  startseg: èµ·å§‹åˆ—åœ°å€
+ * @param  startpage: èµ·å§‹é¡µåœ°å€
+ * @param  endseg: ç»“æŸåˆ—åœ°å€
+ * @param  endpage: ç»“æŸé¡µåœ°å€
  * @retval None
  */
 static void set_window_area(unsigned short startseg,unsigned short startpage,unsigned short endseg,unsigned short endpage)
@@ -248,14 +392,14 @@ static void set_window_area(unsigned short startseg,unsigned short startpage,uns
 
 
 
-/*ÄÚ²¿£º²Ù×÷LCDRAM_BufÊı×éº¯Êı------------------------*/
+/*å†…éƒ¨ï¼šæ“ä½œLCDRAM_Bufæ•°ç»„å‡½æ•°------------------------*/
 /** 
- * @brief  LCDRAM_BufÈÎÒâÎ»ÖÃÃèµãº¯Êı
- * @note   (x,y)Î»ÖÃµÄÄ³µã£¬ÏÔÊ¾»òÕß²»ÏÔÊ¾£¬
- * ×¢Òâ£¬Õâ¸öÖ»ÊÇÃèÁË»º´æÇøµÄµã£¬×îÖÕÏÔÊ¾ĞèÒªµ÷ÓÃÆäËüº¯Êı½«»º´æÇøĞ´µ½LCD
- * @param  x: segµÄÎ»ÖÃ
- * @param  y: comµÄÎ»ÖÃ
- * @param  bit: 0£º²»ÏÔÊ¾£¬1£ºÏÔÊ¾
+ * @brief  LCDRAM_Bufä»»æ„ä½ç½®æç‚¹å‡½æ•°
+ * @note   (x,y)ä½ç½®çš„æŸç‚¹ï¼Œæ˜¾ç¤ºæˆ–è€…ä¸æ˜¾ç¤ºï¼Œ
+ * æ³¨æ„ï¼Œè¿™ä¸ªåªæ˜¯æäº†ç¼“å­˜åŒºçš„ç‚¹ï¼Œæœ€ç»ˆæ˜¾ç¤ºéœ€è¦è°ƒç”¨å…¶å®ƒå‡½æ•°å°†ç¼“å­˜åŒºå†™åˆ°LCD
+ * @param  x: segçš„ä½ç½®
+ * @param  y: comçš„ä½ç½®
+ * @param  bit: 0ï¼šä¸æ˜¾ç¤ºï¼Œ1ï¼šæ˜¾ç¤º
  * @retval None
  */
 static void LCDRAM_Buf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit)
@@ -264,10 +408,10 @@ static void LCDRAM_Buf_DrawPoint(unsigned short x,unsigned short y,unsigned char
     unsigned short bx;
     unsigned char temp=0;
 
-    if(x>=seg||y>=com)return;       //³¬³ö·¶Î§
-    pos=y/8;        //µÃµ½Ò³µØÖ·       
+    if(x>=seg||y>=com)return;       //è¶…å‡ºèŒƒå›´
+    pos=y/8;        //å¾—åˆ°é¡µåœ°å€       
     
-    bx=y%8;         //µÃµ½µãÔÚÒ³µØÖ·µÄbitÎ»
+    bx=y%8;         //å¾—åˆ°ç‚¹åœ¨é¡µåœ°å€çš„bitä½
     temp=1<<(7-bx);
 
     if(bit)
@@ -281,152 +425,13 @@ static void LCDRAM_Buf_DrawPoint(unsigned short x,unsigned short y,unsigned char
 }
 
 
-/*¶¨ÒåÈ«¾Öº¯Êı----------------------------------------------------------------*/
+/*å®šä¹‰å…¨å±€å‡½æ•°----------------------------------------------------------------*/
 
-/*LCDÓ²¼şÏà¹Øº¯Êı---------------------------*/
-/** 
- * @brief  LCDÅäÖÃ³õÊ¼»¯
- * @note   ¸Ãº¯Êıµ÷ÓÃÇ°£¬È·±£LCD²Ù¿Ø¹Ü½ÅÒÑ¾­ÅäÖÃµ½Î»
- * @retval None
- */
-extern void LCD_Config_Init(void)
-{
-	int Data = 0;
-    
-    ///¸´Î»LCDÇı¶¯Ğ¾Æ¬
-    RST_Low();
-    Delay_Nms(20);
-    RST_High();
-    Delay_Nms(20);
- 
-    ///À©Õ¹ÃüÁî2ÀïµÄÃüÁîÉèÖÃ
-    Writecom(0x31); // Extension Command 2
-    ////OTP×Ô¶¯¶ÁÈ¡µÄ×´Ì¬¹Ø±Õ£¿£¿
-    Writecom(0xD7); // Disable Auto Read
-    Writedata(0x9F);
-    ////Ê¹ÄÜOTP¶Á×´Ì¬£¿£¿
-    Writecom(0xE0); // Enable OTP Read
-    Writedata(0x00);
-    Delay_Nms(20);
-    
-    ////´¥·¢OTP±à³Ì¹ı³Ì£¿£¿
-    Writecom(0xE3); // OTP Up-Load
-    Delay_Nms(20);
-    ////È¡ÏûOTP¿ØÖÆ
-    Writecom(0xE1); // OTP Control Out
-    
-    ///À©Õ¹ÃüÁî1µÄÃüÁîÉèÖÃ
-    Writecom(0x30); // Extension Command 1
-    ////ÍË³öĞİÃß×´Ì¬
-    Writecom(0x94); // Sleep Out
-    ////¹Ø±ÕÏÔÊ¾
-    Writecom(0xAE); // Display OFF
-    Delay_Nms(50);
-    ////´ò¿ªÉıÑ¹µçÂ·
-    Writecom(0x20); //Power Control
-    Writedata(0x0B); // VB, VR,VF All ON
-    Delay_Nms(100);
-    ////ÉèÖÃVopµçÑ¹Öµ
-    Writecom(0x81); // Set Vop = 14.0V
-    Writedata(0x04);
-    Writedata(0x04);
-
-    // Frame Rate£¨Ö¡ÂÊ£©
-    ///À©Õ¹ÃüÁî2ÀïµÄÃüÁîÉèÖÃ
-    Writecom(0x31);   // Extension Command 2
-    ////ÉèÖÃ²»Í¬ÎÂ¶ÈÏÂµÄÖ¡ÂÊ
-    Writecom(0XF0);   // Frame Rate
-    Writedata(0x02);  // 34.5Hz  //µÍÎÂ-30  -40Ğ§¹û×î¼Ñ£¨-40~TA£©
-    Writedata(0x06);  // 46(TA~TB)
-    Writedata(0x14);  // 83(TB~TC)
-    Writedata(0x1c);  // 138(TC~90)
-    ////TA/TB/TCµÄÎÂ¶Èµã
-    Writecom(0XF2);   // Temperature Range
-    Writedata(0x06);  // -34C£¨TA£©
-    Writedata(0x1c);  // -12C (TB)
-    Writedata(0x50);  //  40C (TC)
-    
-    //Temperature Gradient Compensation(ÎÂ¶ÈÌİ¶È²¹³¥ÏµÊı)
-    Writecom(0xf4);
-    Writedata(0x10) ;  //µÍÎÂ-30  -40Ğ§¹û×î¼Ñ ³£ÎÂÏÂ VOP=12.7V(C9Á½¶Ë)
-    Writedata(0x11);  //µÍÎÂ-30  -40Ğ§¹û×î¼Ñ
-    Writedata(0x00);
-    Writedata(0x00);
-    Writedata(0x00);
-    Writedata(0x11);
-    Writedata(0x51);
-    Writedata(0x35);
-
-    ///À©Õ¹ÃüÁî2ÀïµÄÃüÁîÉèÖÃ
-    Writecom(0x31); // Extension Command 2
-    ////¸ÃÖ¸ÁîÓÃÓÚÉèÖÃÔöÇ¿Æ÷Ğ§ÂÊºÍÆ«ÖÃ±È¡£
-    Writecom(0x32); // Analog Circuit Set
-    Writedata(0x00);
-    Writedata(0x01); // Booster Efficiency =Level1
-    Writedata(0x04); //Bias=1/10
-	////¸ÃÖ¸ÁîÓÃÓÚ¿ØÖÆÄÚÖÃÉıÑ¹µçÂ·ÒÔÌá¹©ÄÚÖÃÎÈÑ¹Æ÷µÄµçÔ´					
-    Writecom(0x51); // Booster Level x10
-    Writedata(0xFB);
-    
-	///À©Õ¹ÃüÁî2ÀïµÄÃüÁîÉèÖÃ					
-    Writecom(0x30); // Extension Command 1
-    ///¸ÃÖ¸Áî¶¨ÒåÏÔÊ¾Ä£Ê½Îª»Ò¶ÈÄ£Ê½»òµ¥É«Ä£Ê½£¬¶¨ÒåÎªµ¥É«Ä£Ê½
-    Writecom(0xF0); //Display Mode
-    Writedata(0x10); //Mono Mode
-    ///ÉèÖÃÏÔÊ¾¿ØÖÆ
-    Writecom(0xCA); //Display Control
-    Writedata(0x00); // CL Dividing Ratio => Not Divide//ÉèÖÃCL·Ö¸î±ÈÀı
-    Writedata(0X4F); //Duty Set => 80 Duty//
-    Writedata(0x00); //Frame Inversion
-						
-    Writecom(0xBC); // Data Scan Direction£¨ÉèÖÃÉ¨Ãè·½Ïò£©
-    Writedata(0x02);//00 Óë 02 É¨ÃèË³Ğò//00ÊÇ´Ó×óÍùÓÒ£¬´ÓÉÏÍùÏÂ£¬02ÊÇ´ÓÓÒÍù×ó£¬´ÓÉÏÍùÏÂ
-    Writecom(0xA6); // Normal Display//Õı³£ÏÔÊ¾
-            
-    Writecom(0x31); //Extension Command 2
-    Writecom(0x40); //Internal Power Supply£¨ÄÚ²¿µçÔ´£©
-    Writecom(0x30); // Extension Command 1
-
-    // icon clear£¨Í¼±êramÇøÇåÁã£©
-    Writecom(0x77); // Enable ICON RAM
-    Writecom(0x5C);
-    for(Data = 0; Data <= 255; Data++)
-    {
-        Writedata(0);
-    }
-    
-    Writecom(0x76); // Disable ICON RAM£¨½ûÖ¹Í¼±êram£©
-
-    Writecom(0x30); //Extension Command 1
-    ////ÉèÖÃ¿É·ÃÎÊµÄÁĞµØÖ·µÄÇøÓò
-    Writecom(0x15); // Column Address Setting
-    Writedata(0x00); // SEG0 -> SEG159
-    Writedata(0x9F);
-    ////ÉèÖÃ¿É·ÃÎÊµÄÒ³µØÖ·µÄÇøÓò
-    Writecom(0x75); // Row Address Setting
-    Writedata(0x00); // COM0 -> COM59
-    Writedata(0x13);
-    
-    //Çå¿Õ×Ô¼º¶¨ÒåµÄ»º´æÇø£¬Ò²Çå¿ÕLCDµÄDDRAM
-    Clear_LCDRAM_Buf();
-    Refresh_LCD_DDRAM();
-    Writecom(0xAF); // Display ON£¨´ò¿ªÏÔÊ¾£©
-}
-/** 
- * @brief  ÉèÖÃID
- * @note   IDÓÃÀ´¸ÉÊ²Ã´²»Çå³ş£¬¹À¼ÆÒªÎÊÒº¾§³§¼Ò
- * @retval None
- */
-extern void Set_OTP_Register(void)   
-{   
-    Writecom(0x38);  // Extension Command 3 
-    Writecom(0xD5);  // Set ID=3
-    Writedata(0x03);   
-}
+/*LCDç¡¬ä»¶ç›¸å…³å‡½æ•°---------------------------*/
 
 /** 
- * @brief  LCDµÄ×Ü³õÊ¼»¯º¯Êı
- * @note   ¼¯ºÏÁË¹Ü½Å³õÊ¼»¯¡¢ÅäÖÃ³õÊ¼»¯ºÍÉèÖÃID
+ * @brief  LCDçš„æ€»åˆå§‹åŒ–å‡½æ•°
+ * @note   é›†åˆäº†ç®¡è„šåˆå§‹åŒ–ã€é…ç½®åˆå§‹åŒ–å’Œè®¾ç½®ID
  * @retval None
  */
 extern void LCD_Init(void)
@@ -438,30 +443,30 @@ extern void LCD_Init(void)
 
 extern void Closed_LCD(void)
 {
-    ///À©Õ¹ÃüÁî1µÄÃüÁîÉèÖÃ
+    ///æ‰©å±•å‘½ä»¤1çš„å‘½ä»¤è®¾ç½®
     Writecom(0x30); // Extension Command 1
-    ////¹Ø±ÕÏÔÊ¾
+    ////å…³é—­æ˜¾ç¤º
     Writecom(0xAE); // Display OFF
-    ////ÍË³öĞİÃß×´Ì¬
+    ////é€€å‡ºä¼‘çœ çŠ¶æ€
     Writecom(0x95); // Sleep IN
     Delay_Nms(100);
-    ///ÖÃµÍLCDÇı¶¯Ğ¾Æ¬¸´Î»½Å
+    ///ç½®ä½LCDé©±åŠ¨èŠ¯ç‰‡å¤ä½è„š
     RST_Low();
 }
 
 
 
 
-/*²Ù×÷LCDRAM_BufÊı×éº¯Êı------------------------*/
+/*æ“ä½œLCDRAM_Bufæ•°ç»„å‡½æ•°------------------------*/
 
 /** 
- * @brief  ÍùLCDRAM_BufµÄÖ¸¶¨Î»ÖÃÏÔÊ¾»òÇå³ıÒ»¸ö×Ö·û(°üÀ¨ºº×Ö¡¢×ÖÄ¸¡¢Êı×Ö¡¢·ûºÅ)
- * @note   Ãèµã·½Ê½ÊÇÖğÁĞÊ½£¬Çå³ıµÄ»°£¬È·±£Í¬Ò»Î»ÖÃÏÔÊ¾ÁË¶ÔÓ¦×Ö·û£¬²»È»²»±£Ö¤Çå³ıĞ§¹û
- * @param  x: Ö¸¶¨ÆğÊ¼Î»ÖÃµÄseg
- * @param  y: Ö¸¶¨ÆğÊ¼Î»ÖÃµÄcom
- * @param  charbufstartaddress: ×Ö·ûµÄ×ÖÄ£ÆğÊ¼µØÖ·
- * @param  size: ×Ö·û³ß´ç
- * @param  displayorclear: clear´ú±íÇå³ı£¬display´ú±íÏÔÊ¾
+ * @brief  å¾€LCDRAM_Bufçš„æŒ‡å®šä½ç½®æ˜¾ç¤ºæˆ–æ¸…é™¤ä¸€ä¸ªå­—ç¬¦(åŒ…æ‹¬æ±‰å­—ã€å­—æ¯ã€æ•°å­—ã€ç¬¦å·)
+ * @note   æç‚¹æ–¹å¼æ˜¯é€åˆ—å¼ï¼Œæ¸…é™¤çš„è¯ï¼Œç¡®ä¿åŒä¸€ä½ç½®æ˜¾ç¤ºäº†å¯¹åº”å­—ç¬¦ï¼Œä¸ç„¶ä¸ä¿è¯æ¸…é™¤æ•ˆæœ
+ * @param  x: æŒ‡å®šèµ·å§‹ä½ç½®çš„seg
+ * @param  y: æŒ‡å®šèµ·å§‹ä½ç½®çš„com
+ * @param  charbufstartaddress: å­—ç¬¦çš„å­—æ¨¡èµ·å§‹åœ°å€
+ * @param  size: å­—ç¬¦å°ºå¯¸
+ * @param  displayorclear: clearä»£è¡¨æ¸…é™¤ï¼Œdisplayä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 extern void InputCharacter_to_LCDRAM_Buf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear)
@@ -477,9 +482,9 @@ extern void InputCharacter_to_LCDRAM_Buf(unsigned short x,unsigned short y,const
     comnumber = size%100;
 
     
-    bytesnumber = segnumber*(comnumber/8+((comnumber%8)?1:0));      //µÃµ½ĞèÒªÏÔÊ¾ËùÓÃµÄ×Ö½ÚÊı
+    bytesnumber = segnumber*(comnumber/8+((comnumber%8)?1:0));      //å¾—åˆ°éœ€è¦æ˜¾ç¤ºæ‰€ç”¨çš„å­—èŠ‚æ•°
 
-    for(t=0;t<bytesnumber;t++)                                      //½«ÏÔÊ¾ËùÓÃµÄ×Ö½ÚÈ«²¿Ğ´µ½LCDRAM_BufÊı×éÖĞ
+    for(t=0;t<bytesnumber;t++)                                      //å°†æ˜¾ç¤ºæ‰€ç”¨çš„å­—èŠ‚å…¨éƒ¨å†™åˆ°LCDRAM_Bufæ•°ç»„ä¸­
     {     
         temp=*(charbufstartaddress+t);
         for(t1=0;t1<8;t1++) 
@@ -487,16 +492,16 @@ extern void InputCharacter_to_LCDRAM_Buf(unsigned short x,unsigned short y,const
             if(temp&0x80)
             {
 
-                if((x>=seg)||(y>=com))  //³¬·¶Î§ÁË
+                if((x>=seg)||(y>=com))  //è¶…èŒƒå›´äº†
                 {
-                    return;             //³¬³öÊı×é·¶Î§µÄ£¬²»Ğ´
+                    return;             //è¶…å‡ºæ•°ç»„èŒƒå›´çš„ï¼Œä¸å†™
                 }
 
-                if(displayorclear == display)      //Ğ´1£¬¼´ÏÔÊ¾
+                if(displayorclear == display)      //å†™1ï¼Œå³æ˜¾ç¤º
                 {
                     LCDRAM_Buf_DrawPoint(x,y,1);
                 }
-                else                                //Ğ´0£¬¼´Çå³ı
+                else                                //å†™0ï¼Œå³æ¸…é™¤
                 {
                     LCDRAM_Buf_DrawPoint(x,y,0);
                 }
@@ -514,22 +519,22 @@ extern void InputCharacter_to_LCDRAM_Buf(unsigned short x,unsigned short y,const
 }
 
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éÖĞÖ¸¶¨·¶Î§ÄÚµÄÊı¾İ
- * @note   ×¢Òâ£¬·¶Î§²ÉÓÃÇ°±Õºó¿ª·½Ê½£¬¼´ÆğÊ¼µã»á±»Çå³ı£¬½áÊøµã²»»á±»Çå³ı
- * @param  x1: ÆğÊ¼seg£¬0~(seg-1)
- * @param  y1: ÆğÊ¼com 0~(com-1)
- * @param  x2: ½áÊøseg 1~seg
- * @param  y2: ½áÊøcom 1~com
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„ä¸­æŒ‡å®šèŒƒå›´å†…çš„æ•°æ®
+ * @note   æ³¨æ„ï¼ŒèŒƒå›´é‡‡ç”¨å‰é—­åå¼€æ–¹å¼ï¼Œå³èµ·å§‹ç‚¹ä¼šè¢«æ¸…é™¤ï¼Œç»“æŸç‚¹ä¸ä¼šè¢«æ¸…é™¤
+ * @param  x1: èµ·å§‹segï¼Œ0~(seg-1)
+ * @param  y1: èµ·å§‹com 0~(com-1)
+ * @param  x2: ç»“æŸseg 1~seg
+ * @param  y2: ç»“æŸcom 1~com
  * @retval None
  */
 extern void Clear_PartArea_of_LCDRAM_Buf(unsigned short x1,unsigned short y1,unsigned short x2,unsigned short y2)
 {
     unsigned short j,k;
-    if((x1>=seg)||(y1>=com)||(x2>seg)||(y2>com))//Î»ÖÃ³¬·¶Î§ÁË£¬Ö±½Ó·µ»Ø
+    if((x1>=seg)||(y1>=com)||(x2>seg)||(y2>com))//ä½ç½®è¶…èŒƒå›´äº†ï¼Œç›´æ¥è¿”å›
     {
         return;         
     }
-    if((x1>=x2)||(y1>=y2))  //ÆğÊ¼Î»ÖÃ±ØĞëĞ¡ÓÚ½áÊøÎ»ÖÃ£¬·ñÔòÖ±½Ó·µ»Ø
+    if((x1>=x2)||(y1>=y2))  //èµ·å§‹ä½ç½®å¿…é¡»å°äºç»“æŸä½ç½®ï¼Œå¦åˆ™ç›´æ¥è¿”å›
     {
         return;
     }
@@ -544,7 +549,7 @@ extern void Clear_PartArea_of_LCDRAM_Buf(unsigned short x1,unsigned short y1,uns
 }
 
 /** 
- * @brief  LCDRAM_BufÊı×éÇåÁã
+ * @brief  LCDRAM_Bufæ•°ç»„æ¸…é›¶
  * @note   
  * @retval None
  */
@@ -555,7 +560,7 @@ extern void Clear_LCDRAM_Buf(void)
 
 #if (MeterType == ThreePhaseMeter)
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éµÄÏóÏŞÇøµÄÄÚÈİ
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„è±¡é™åŒºçš„å†…å®¹
  * @note   
  * @retval None
  */
@@ -566,7 +571,7 @@ extern void Clear_QuadrantArea_Of_LCDRAM_Buf(void)
 #endif 
 
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éµÄÖĞÎÄÌáÊ¾ÇøµÄÄÚÈİ
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„ä¸­æ–‡æç¤ºåŒºçš„å†…å®¹
  * @note   
  * @retval None
  */
@@ -576,7 +581,7 @@ extern void Clear_ChineseHintArea_Of_LCDRAM_Buf(void)
 }
 
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éµÄÊı×ÖÇøµÄÄÚÈİ
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„æ•°å­—åŒºçš„å†…å®¹
  * @note   
  * @retval None
  */
@@ -586,7 +591,7 @@ extern void Clear_NumberArea_Of_LCDRAM_Buf(void)
 }
 
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éµÄ±¨¾¯ÌáÊ¾ºÍµ¥Î»ÇøµÄÄÚÈİ
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„æŠ¥è­¦æç¤ºå’Œå•ä½åŒºçš„å†…å®¹
  * @note   
  * @retval None
  */
@@ -599,7 +604,7 @@ extern void Clear_UnitArea_Of_LCDRAM_Buf(void)
     Clear_PartArea_of_LCDRAM_Buf(UnitAreaStartSeg,UnitAreaStartCom,UnitAreaEndSeg,UnitAreaEndCom);
 }
 /** 
- * @brief  Çå³ıLCDRAM_BufÊı×éµÄ×´Ì¬ÌáÊ¾ÇøµÄÄÚÈİ
+ * @brief  æ¸…é™¤LCDRAM_Bufæ•°ç»„çš„çŠ¶æ€æç¤ºåŒºçš„å†…å®¹
  * @note   
  * @retval None
  */
@@ -611,19 +616,19 @@ extern void Clear_StatusHintArea_Of_LCDRAM_Buf(void)
 
 
 
-/*Ë¢ĞÂLCDĞ¾Æ¬ÏÔÊ¾Çøº¯Êı------------------------*/
+/*åˆ·æ–°LCDèŠ¯ç‰‡æ˜¾ç¤ºåŒºå‡½æ•°------------------------*/
 /** 
- * @brief  Ë¢ĞÂLCDÕûÆÁµÄÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDæ•´å±çš„æ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval none
  */
 extern void Refresh_LCD_DDRAM(void)
 {  
     unsigned char i,j;
     window();
-    for(i=0;i<Page;i++)         //Ò³µØÖ··¶Î§
+    for(i=0;i<Page;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=0;j<seg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=0;j<seg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
@@ -632,17 +637,17 @@ extern void Refresh_LCD_DDRAM(void)
 
 #if (MeterType == ThreePhaseMeter)
 /** 
- * @brief  Ë¢ĞÂLCDµÄÏóÏŞÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„è±¡é™åŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_QuadrantArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(QuadrantAreaStartSeg,QuadrantAreaStartPageCom,QuadrantAreaEndSeg,QuadrantAreaAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=QuadrantAreaStartPageCom;i<QuadrantAreaAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(QuadrantAreaStartSeg,QuadrantAreaStartPageCom,QuadrantAreaEndSeg,QuadrantAreaAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=QuadrantAreaStartPageCom;i<QuadrantAreaAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=QuadrantAreaStartSeg;j<QuadrantAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=QuadrantAreaStartSeg;j<QuadrantAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
@@ -651,17 +656,17 @@ extern void Refresh_QuadrantArea_of_LCD_DDRAM(void)
 #endif 
 
 /** 
- * @brief  Ë¢ĞÂLCDµÄÖĞÎÄÌáÊ¾ÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„ä¸­æ–‡æç¤ºåŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_ChineseHintArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(ChineseHintAreaStartSeg,ChineseHintAreaStartPageCom,ChineseHintAreaEndSeg,ChineseHintAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=ChineseHintAreaStartPageCom;i<ChineseHintAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(ChineseHintAreaStartSeg,ChineseHintAreaStartPageCom,ChineseHintAreaEndSeg,ChineseHintAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=ChineseHintAreaStartPageCom;i<ChineseHintAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=ChineseHintAreaStartSeg;j<ChineseHintAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=ChineseHintAreaStartSeg;j<ChineseHintAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
@@ -669,17 +674,17 @@ extern void Refresh_ChineseHintArea_of_LCD_DDRAM(void)
 }
 
 /** 
- * @brief  Ë¢ĞÂLCDµÄÊı×ÖÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„æ•°å­—åŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_NumberArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(NumberAreaStartSeg,NumberAreaStartPageCom,NumberAreaEndSeg,NumberAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=NumberAreaStartPageCom;i<NumberAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(NumberAreaStartSeg,NumberAreaStartPageCom,NumberAreaEndSeg,NumberAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=NumberAreaStartPageCom;i<NumberAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=NumberAreaStartSeg;j<NumberAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=NumberAreaStartSeg;j<NumberAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
@@ -687,51 +692,51 @@ extern void Refresh_NumberArea_of_LCD_DDRAM(void)
 }
 
 /** 
- * @brief  Ë¢ĞÂLCDµÄ±¨¾¯ÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„æŠ¥è­¦åŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_AlarmHintArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(AlarmHintAreaStartSeg,AlarmHintAreaStartPageCom,AlarmHintAreaEndSeg,AlarmHintAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=AlarmHintAreaStartPageCom;i<AlarmHintAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(AlarmHintAreaStartSeg,AlarmHintAreaStartPageCom,AlarmHintAreaEndSeg,AlarmHintAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=AlarmHintAreaStartPageCom;i<AlarmHintAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=AlarmHintAreaStartSeg;j<AlarmHintAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=AlarmHintAreaStartSeg;j<AlarmHintAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
     }
 }
 /** 
- * @brief  Ë¢ĞÂLCDµÄµ¥Î»ÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„å•ä½åŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_UnitArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(UnitAreaStartSeg,UnitAreaStartPageCom,UnitAreaEndSeg,UnitAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=UnitAreaStartPageCom;i<UnitAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(UnitAreaStartSeg,UnitAreaStartPageCom,UnitAreaEndSeg,UnitAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=UnitAreaStartPageCom;i<UnitAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=UnitAreaStartSeg;j<UnitAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=UnitAreaStartSeg;j<UnitAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
     }
 }
 /** 
- * @brief  Ë¢ĞÂLCDµÄ×´Ì¬ÇøÏÔÊ¾ÄÚÈİ
- * @note   ÊÇÒÔ±äÁ¿Êı×éLCDRAM_BufÖĞµÄÄÚÈİÎª×¼
+ * @brief  åˆ·æ–°LCDçš„çŠ¶æ€åŒºæ˜¾ç¤ºå†…å®¹
+ * @note   æ˜¯ä»¥å˜é‡æ•°ç»„LCDRAM_Bufä¸­çš„å†…å®¹ä¸ºå‡†
  * @retval None
  */
 extern void Refresh_StatusHintArea_of_LCD_DDRAM(void)
 {
     unsigned char i,j;
-    set_window_area(StatusHintAreaStartSeg,StatusHintAreaStartPageCom,StatusHintAreaEndSeg,StatusHintAreaEndPageCom);   //È·¶¨LCDµÄÏÔÊ¾ÇøÓò
-    for(i=StatusHintAreaStartPageCom;i<StatusHintAreaEndPageCom;i++)         //Ò³µØÖ··¶Î§
+    set_window_area(StatusHintAreaStartSeg,StatusHintAreaStartPageCom,StatusHintAreaEndSeg,StatusHintAreaEndPageCom);   //ç¡®å®šLCDçš„æ˜¾ç¤ºåŒºåŸŸ
+    for(i=StatusHintAreaStartPageCom;i<StatusHintAreaEndPageCom;i++)         //é¡µåœ°å€èŒƒå›´
     {
-        for(j=StatusHintAreaStartSeg;j<StatusHintAreaEndSeg;j++)      //¶ÎµØÖ··¶Î§
+        for(j=StatusHintAreaStartSeg;j<StatusHintAreaEndSeg;j++)      //æ®µåœ°å€èŒƒå›´
         {
             Writedata(LCDRAM_Buf[j][i]);
         }
@@ -741,16 +746,16 @@ extern void Refresh_StatusHintArea_of_LCD_DDRAM(void)
 
 
 /** 
- * @brief  Ğ´LCDRAM_BufÊı×éº¯Êı
+ * @brief  å†™LCDRAM_Bufæ•°ç»„å‡½æ•°
  * @note   
- * @param  x: segÖµ
- * @param  y: pageÖµ
- * @param  Buf: ´ıĞ´µÄÄÚÈİ
+ * @param  x: segå€¼
+ * @param  y: pageå€¼
+ * @param  Buf: å¾…å†™çš„å†…å®¹
  * @retval None
  */
 extern void Wirte_LCDRAM_Buf(unsigned short x, unsigned short y, unsigned char Buf)
 {
-    if((x>=seg)||(y>=Page))    //³¬·¶Î§
+    if((x>=seg)||(y>=Page))    //è¶…èŒƒå›´
     {
         return;
     }

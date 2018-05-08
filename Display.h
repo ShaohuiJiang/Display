@@ -5,127 +5,121 @@
 * @date      : Sat Apr 21 2018
 * @brief     : 
 ********************************************************************************
-* @attention :Èç¹û±¾ÎÄ±¾ÖĞ´æÔÚºº×Ö±äÁ¿£¬ÎÄ±¾Òª×ª»¯³ÉGB2312±àÂë¸ñÊ½±£´æºÍ´ò¿ª
+* @attention :å¦‚æœæœ¬æ–‡æœ¬ä¸­å­˜åœ¨æ±‰å­—å˜é‡ï¼Œæ–‡æœ¬è¦è½¬åŒ–æˆGB2312ç¼–ç æ ¼å¼ä¿å­˜å’Œæ‰“å¼€
 *
 *
 */
-/* Ìõ¼ş±àÒë-------------------------------------------------------------------*/
+/* æ¡ä»¶ç¼–è¯‘-------------------------------------------------------------------*/
 #ifndef _DISPLAY_H
 #define _DISPLAY_H
 
 
 
-/*Í·ÎÄ¼ş----------------------------------------------------------------------*/
-///Ìí¼ÓÍ·ÎÄ¼ş
+/*å¤´æ–‡ä»¶----------------------------------------------------------------------*/
+///æ·»åŠ å¤´æ–‡ä»¶
 #include "LCDConfig.h"
 
-/*ºê¶¨Òå----------------------------------------------------------------------*/
-///Ìí¼Óºê¶¨Òå
+/*å®å®šä¹‰----------------------------------------------------------------------*/
+///æ·»åŠ å®å®šä¹‰
 typedef enum
 {
-    CombinedActivePowerEnergy,          //×éºÏÓĞ¹¦µçÁ¿
-	PositiveActivePowerEnergy,	        //ÕıÏòÓĞ¹¦µçÁ¿
-	ReverseActivePowerEnergy,		    //·´ÏòÓĞ¹¦µçÁ¿
-    CombinedOneReactivePowerEnergy,     //×éºÏ1ÎŞ¹¦µçÁ¿
-    CombinedTwoReactivePowerEnergy,     //×éºÏ2ÎŞ¹¦µçÁ¿
-	PositiveReactivePowerEnergy,	    //ÕıÏòÎŞ¹¦µçÁ¿
-	ReverseReactivePowerEnergy,		    //·´ÏòÎŞ¹¦µçÁ¿
-    FirstQuadrantReactivePowerEnergy,   //µÚ1ÏóÏŞÎŞ¹¦µçÁ¿
-    SecondQuadrantReactivePowerEnergy,  //µÚ2ÏóÏŞÎŞ¹¦µçÁ¿
-    ThirdQuadrantReactivePowerEnergy,   //µÚ3ÏóÏŞÎŞ¹¦µçÁ¿
-    FourthQuadrantReactivePowerEnergy,  //µÚ4ÏóÏŞÎŞ¹¦µçÁ¿
-    PositiveApparentEnergy,             //ÕıÏòÊÓÔÚµçÁ¿
-    ReverseApparentEnergy               //·´ÏòÊÓÔÚµçÁ¿
-}ENERGY_TYPE;                           //µçÁ¿ÖÖÀà
+    CombinedActivePowerEnergy,          //ç»„åˆæœ‰åŠŸç”µé‡
+	PositiveActivePowerEnergy,	        //æ­£å‘æœ‰åŠŸç”µé‡
+	ReverseActivePowerEnergy,		    //åå‘æœ‰åŠŸç”µé‡
+    CombinedOneReactivePowerEnergy,     //ç»„åˆ1æ— åŠŸç”µé‡
+    CombinedTwoReactivePowerEnergy,     //ç»„åˆ2æ— åŠŸç”µé‡
+	PositiveReactivePowerEnergy,	    //æ­£å‘æ— åŠŸç”µé‡
+	ReverseReactivePowerEnergy,		    //åå‘æ— åŠŸç”µé‡
+    FirstQuadrantReactivePowerEnergy,   //ç¬¬1è±¡é™æ— åŠŸç”µé‡
+    SecondQuadrantReactivePowerEnergy,  //ç¬¬2è±¡é™æ— åŠŸç”µé‡
+    ThirdQuadrantReactivePowerEnergy,   //ç¬¬3è±¡é™æ— åŠŸç”µé‡
+    FourthQuadrantReactivePowerEnergy,  //ç¬¬4è±¡é™æ— åŠŸç”µé‡
+    PositiveApparentEnergy,             //æ­£å‘è§†åœ¨ç”µé‡
+    ReverseApparentEnergy               //åå‘è§†åœ¨ç”µé‡
+}ENERGY_TYPE;                           //ç”µé‡ç§ç±»
 
 typedef enum
 {
-    TotalPhase,                         //ºÏÏà
-    APhase,                             //AÏà
-    BPhase,                             //BÏà
-    CPhase                              //CÏà
-}PHASE_TYPE;                            //ÏàÎ»ÖÖÀà
-
-
-typedef enum
-{
-    Plus,                      //Õı
-    Minus                      //¸º
-}PLUS_MINUS;                   //Õı¸º±êÖ¾
+    TotalPhase,                         //åˆç›¸
+    APhase,                             //Aç›¸
+    BPhase,                             //Bç›¸
+    CPhase                              //Cç›¸
+}PHASE_TYPE;                            //ç›¸ä½ç§ç±»
 
 
 typedef enum
 {
-    DisplayHighZero,           //ÏÔÊ¾¸ßÎ»Áã
-    NoDisplayHighZero          //²»ÏÔÊ¾¸ßÎ»Áã
-}HIGHZERO_TYPE;                //¸ßÎ»ÏÔÁã±êÖ¾
+    Plus,                      //æ­£
+    Minus                      //è´Ÿ
+}PLUS_MINUS;                   //æ­£è´Ÿæ ‡å¿—
+
 
 typedef enum
 {
-    NoDisplaySplitScreen,               //²»ÏÔÊ¾·ÖÆÁ
-    DisplaySplitScreenZero,             //ÏÔÊ¾·ÖÆÁĞòºÅ00
-    DisplaySplitScreenOne,              //ÏÔÊ¾·ÖÆÁĞòºÅ01
-    DisplaySplitScreenTwo,              //ÏÔÊ¾·ÖÆÁĞòºÅ02
-    DisplaySplitScreenThree             //ÏÔÊ¾·ÖÆÁĞòºÅ03
-    //¿ÉÒÔ¼ÌĞøÔö¼Ó...
-}SPLITSCREENDISPLAY_TYPE;               //·ÖÆÁÏÔÊ¾±êÖ¾
+    DisplayHighZero,           //æ˜¾ç¤ºé«˜ä½é›¶
+    NoDisplayHighZero          //ä¸æ˜¾ç¤ºé«˜ä½é›¶
+}HIGHZERO_TYPE;                //é«˜ä½æ˜¾é›¶æ ‡å¿—
 
-/*ÉùÃ÷Íâ²¿º¯Êı----------------------------------------------------------------*/
+typedef enum
+{
+    NoDisplaySplitScreen,               //ä¸æ˜¾ç¤ºåˆ†å±
+    DisplaySplitScreenZero,             //æ˜¾ç¤ºåˆ†å±åºå·00
+    DisplaySplitScreenOne,              //æ˜¾ç¤ºåˆ†å±åºå·01
+    DisplaySplitScreenTwo,              //æ˜¾ç¤ºåˆ†å±åºå·02
+    DisplaySplitScreenThree             //æ˜¾ç¤ºåˆ†å±åºå·03
+    //å¯ä»¥ç»§ç»­å¢åŠ ...
+}SPLITSCREENDISPLAY_TYPE;               //åˆ†å±æ˜¾ç¤ºæ ‡å¿—
+
+/*å£°æ˜å¤–éƒ¨å‡½æ•°----------------------------------------------------------------*/
 /** 
- * @brief  ÏÔÊ¾µçÁ¿º¯Êı
+ * @brief  æ˜¾ç¤ºç”µé‡å‡½æ•°
  * @note  
- * @param  phase: ´ú±íÏàÎ» ¾ßÌå²Î¼ûPHASE_TYPEÃ¶¾Ù 
- * @param  engerytype: µçÁ¿ÖÖÀà£¬¾ßÌå²Î¼ûENERGY_TYPEÃ¶¾Ù
- * @param  date:    ÈÕÆÚ£¬ÔİÊ±Ö§³Ö0~12£¬0±íÊ¾µ±Ç°  ÆäËû´ú±íÉÏxÔÂ
- * @param  rate:    ·ÑÂÊ 0~12£¬ÆäÖĞ0´ú±í×Ü£¬ÆäËû´ú±íTx
- * @param  engerypoint: Ö¸ÏòµçÁ¿´æ´¢µÄÊı×é£¬Ä¬ÈÏ6×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íµÚ3,4Ğ¡Êı
- * @param  decimalpoint: ´ú±íÏÔÊ¾µÄµçÁ¿ÏÔÊ¾¼¸Î»Ğ¡Êı£¬0~4
- * @param  plusminus: ´ú±íÊÇ·ñÏÔÊ¾¸ººÅ£¬    Plus´ú±í²»ÏÔÊ¾£¬Minus´ú±íÏÔÊ¾
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬¾ßÌå²Î¼ûHIGHZERO_TYPEÃ¶¾Ù
+ * @param  phase: ä»£è¡¨ç›¸ä½ å…·ä½“å‚è§PHASE_TYPEæšä¸¾ 
+ * @param  engerytype: ç”µé‡ç§ç±»ï¼Œå…·ä½“å‚è§ENERGY_TYPEæšä¸¾
+ * @param  date:    æ—¥æœŸï¼Œæš‚æ—¶æ”¯æŒ0~12ï¼Œ0è¡¨ç¤ºå½“å‰  å…¶ä»–ä»£è¡¨ä¸Šxæœˆ
+ * @param  rate:    è´¹ç‡ 0~12ï¼Œå…¶ä¸­0ä»£è¡¨æ€»ï¼Œå…¶ä»–ä»£è¡¨Tx
+ * @param  engerypoint: æŒ‡å‘ç”µé‡å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®¤6å­—èŠ‚BCDç ï¼Œæœ€ä½å­—èŠ‚ä»£è¡¨ç¬¬3,4å°æ•°
+ * @param  decimalpoint: ä»£è¡¨æ˜¾ç¤ºçš„ç”µé‡æ˜¾ç¤ºå‡ ä½å°æ•°ï¼Œ0~4
+ * @param  plusminus: ä»£è¡¨æ˜¯å¦æ˜¾ç¤ºè´Ÿå·ï¼Œ    Plusä»£è¡¨ä¸æ˜¾ç¤ºï¼ŒMinusä»£è¡¨æ˜¾ç¤º
+ * @param  displayhighzero: é«˜ä½æ˜¯å¦æ˜¾é›¶ï¼Œå…·ä½“å‚è§HIGHZERO_TYPEæšä¸¾
  * @retval None
  */
 extern void Display_Engery(PHASE_TYPE phase,ENERGY_TYPE engerytype,unsigned char date,unsigned char rate,unsigned char* engerypoint,unsigned char decimalpoint,PLUS_MINUS plusminus,HIGHZERO_TYPE displayhighzero);
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°ÈÕÆÚ
+ * @brief  æ˜¾ç¤ºå½“å‰æ—¥æœŸ
  * @note   
- * @param  datepoint: Ö¸ÏòµçÁ¿´æ´¢µÄÊı×é£¬Ä¬ÈÏ3×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÈÕ
+ * @param  datepoint: æŒ‡å‘ç”µé‡å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®¤3å­—èŠ‚BCDç ï¼Œæœ€ä½å­—èŠ‚ä»£è¡¨æ—¥
  * @retval None
  */
 extern void Display_CurrentDate(unsigned char* datepoint);
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Ê±¼ä
+ * @brief  æ˜¾ç¤ºå½“å‰æ—¶é—´
  * @note   
- * @param  timepoint: Ö¸ÏòÊ±¼ä´æ´¢µÄÊı×é£¬Ä¬ÈÏ3×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÃë
+ * @param  timepoint: æŒ‡å‘æ—¶é—´å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®¤3å­—èŠ‚BCDç ï¼Œæœ€ä½å­—èŠ‚ä»£è¡¨ç§’
  * @retval None
  */
 extern void Display_CurrentTime(unsigned char* timepoint);
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Ê£Óà½ğ¶î
- * @note   ÈıÏàÏÔÊ¾¡°µ±Ç°Ê£Óàµç·Ñ¡± µ¥ÏàÏÔÊ¾¡°µ±Ç°Ê£Óà½ğ¶î¡±
- * @param  amountpoint: Ö¸ÏòÊ£Óà½ğ¶î´æ´¢µÄÊı×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íĞ¡Êı1¡¢2Î»
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬0´ú±í²»ÏÔÊ¾£¬ 1´ú±íÏÔÊ¾
+ * @brief  æ˜¾ç¤ºå½“å‰å‰©ä½™é‡‘é¢
+ * @note   ä¸‰ç›¸æ˜¾ç¤ºâ€œå½“å‰å‰©ä½™ç”µè´¹â€ å•ç›¸æ˜¾ç¤ºâ€œå½“å‰å‰©ä½™é‡‘é¢â€
+ * @param  amountpoint: æŒ‡å‘å‰©ä½™é‡‘é¢å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®¤4å­—èŠ‚BCDç ï¼Œæœ€ä½å­—èŠ‚ä»£è¡¨å°æ•°1ã€2ä½
+ * @param  displayhighzero: é«˜ä½æ˜¯å¦æ˜¾é›¶ï¼Œ0ä»£è¡¨ä¸æ˜¾ç¤ºï¼Œ 1ä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 extern void Display_RemainingAmount(unsigned char* amountpoint,unsigned char displayhighzero);
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Í¸Ö§½ğ¶î
- * @note   ÈıÏàÏÔÊ¾¡°µ±Ç°Í¸Ö§µç·Ñ¡± µ¥ÏàÏÔÊ¾¡°µ±Ç°Í¸Ö§½ğ¶î¡±
- * @param  amountpoint: Ö¸ÏòÍ¸Ö§½ğ¶î´æ´¢µÄÊı×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íĞ¡Êı1¡¢2Î»
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬0´ú±í²»ÏÔÊ¾£¬ 1´ú±íÏÔÊ¾
+ * @brief  æ˜¾ç¤ºå½“å‰é€æ”¯é‡‘é¢
+ * @note   ä¸‰ç›¸æ˜¾ç¤ºâ€œå½“å‰é€æ”¯ç”µè´¹â€ å•ç›¸æ˜¾ç¤ºâ€œå½“å‰é€æ”¯é‡‘é¢â€
+ * @param  amountpoint: æŒ‡å‘é€æ”¯é‡‘é¢å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®¤4å­—èŠ‚BCDç ï¼Œæœ€ä½å­—èŠ‚ä»£è¡¨å°æ•°1ã€2ä½
+ * @param  displayhighzero: é«˜ä½æ˜¯å¦æ˜¾é›¶ï¼Œ0ä»£è¡¨ä¸æ˜¾ç¤ºï¼Œ 1ä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 extern void Display_OverdraftAmount(unsigned char* amountpoint,unsigned char displayhighzero);
 
 
-extern unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint);
-
-extern void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen);
-extern void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear);
-extern void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset);
-extern void Clear_ChineseHintArea_LCDRAM_BackupBuf(void);
 #endif
 /*end------------------------------------------------------------------------*/
