@@ -18,6 +18,14 @@
 
 /*宏定义----------------------------------------------------------------------*/
 ///添加宏定义
+
+typedef struct
+{
+    short GBKBuf[ChineseHintAreaGBKBufSize];        //字符串GBK码缓存区
+    unsigned char len;                              //字符串长度
+}GBKBUF_LENGTH_TYPE;
+
+
 #define ChineseHintAreaGBKBufSize 20    //中文提示区字符GBK码缓存区的大小
 /*内部变量声明----------------------------------------------------------------*/
 ///添加内部变量
@@ -1250,8 +1258,33 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
 {
 
     unsigned char segpoint;
-
+    char* str;
     Clear_ChineseHintArea_Of_LCDRAM_Buf();  //清空LCDRAM_Buf中的中文提示区
+
+    switch(phase)
+    {   
+        case APhase:
+            str = "A相";
+        break;
+        
+        case BPhase:
+            str = "B相";
+        break;
+        
+        case CPhase:
+            str = "C相";
+        break;
+
+        default:
+        break;
+    }
+
+    if(phase != TotalPhase)
+    {
+
+    }
+
+
 
     segpoint = ChineseHintAreaStartSeg;  
     //显示相位
