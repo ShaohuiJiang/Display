@@ -22,7 +22,7 @@
 typedef struct
 {
     short GBKBuf[ChineseHintAreaGBKBufSize];        //×Ö·û´®GBKÂë»º´æÇø
-    unsigned char len;                              //×Ö·û´®³¤¶È
+    int len;                              //×Ö·û´®³¤¶È
 }GBKBUF_LENGTH_TYPE;
 
 
@@ -33,7 +33,7 @@ static unsigned short ChineseHintAreaGBKBuf[ChineseHintAreaGBKBufSize];  //ÖĞÎÄÌ
 static unsigned char  ChineseHintAreaGBKLen;                             //ÖĞÎÄÌáÊ¾ÇøÓĞĞ§GBKÂëÊıÁ¿
 /* ÖĞÎÄÌáÊ¾ÇøLCDµÄ±¸·İ»º´æÊı×é£¬ÓÃÓÚ×óÓÒ¹ö¶¯ÏÔÊ¾ ´óĞ¡ÊÇÖĞÎÄÌáÊ¾Çø»º´æÊı×éµÄ2±¶ */
 static unsigned char ChineseHintArea_LCDRAM_BackupBuf[(ChineseHintAreaEndSeg-ChineseHintAreaStartSeg)*2][ChineseHintAreaEndPageCom-ChineseHintAreaStartPageCom];
-
+static GBKBUF_LENGTH_TYPE ChineseHintAreaGBKStruct;
 static unsigned char  ChineseHintArea_RollDisplay;
 
 
@@ -1256,11 +1256,16 @@ static unsigned char Fill_EngeryRate_In_ChineseHintArea(unsigned char startseg,u
  */
 static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engerytype,unsigned char date,unsigned char rate)
 {
-
+    unsigned char i;
     unsigned char segpoint;
     char* str;
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //Çå¿ÕLCDRAM_BufÖĞµÄÖĞÎÄÌáÊ¾Çø
-
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();      //Çå¿ÕLCDRAM_BufÖĞµÄÖĞÎÄÌáÊ¾Çø
+    
+    for(i=0;i<ChineseHintAreaGBKBufSize;i++)    //Çå¿ÕGBKÂëÊı×é»º´æÇø
+    {
+        ChineseHintAreaGBKStruct.GBKBuf[i] = 0;
+    }
+    ChineseHintAreaGBKStruct.len = 0;           //×Ö·û´®³¤¶ÈÇåÁã
     switch(phase)
     {   
         case APhase:
@@ -1281,8 +1286,10 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
 
     if(phase != TotalPhase)
     {
-
+         ChineseHintAreaGBKStruct.len +=strlen(str);    //µÃµ½³¤¶È
+         for(i=0;i<(unsigned char)strlen(str);i++)
     }
+
 
 
 
