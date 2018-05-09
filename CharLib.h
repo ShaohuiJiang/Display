@@ -61,11 +61,11 @@ typedef struct
 
 /* 各个字模数字的大小 */
 #if (MeterType == ThreePhaseMeter)
-#define ChineseHint_Char_6P12P_Number  17
+#define ChineseHint_Char_6P12P_Number  18
 #define ChineseHint_Char_12P12P_Number 56
 #define GBKNumber (ChineseHint_Char_6P12P_Number+ChineseHint_Char_12P12P_Number)
 #else
-#define ChineseHint_Char_7P14P_Number  17
+#define ChineseHint_Char_7P14P_Number  18
 #define ChineseHint_Char_14P14P_Number 56
 #define GBKNumber (ChineseHint_Char_7P14P_Number+ChineseHint_Char_14P14P_Number)
 #endif
