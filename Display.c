@@ -15,25 +15,25 @@
 #include "LCD.h"
 #include "CharLib.h"
 #include "LCDConfig.h"
-
+#include "string.h"
 /*宏定义----------------------------------------------------------------------*/
 ///添加宏定义
+#define ChineseHintAreaGBKBufSize 20                //中文提示区字符GBK码缓存区的大小
+
 
 typedef struct
 {
     short GBKBuf[ChineseHintAreaGBKBufSize];        //字符串GBK码缓存区
-    int len;                              //字符串长度
-}GBKBUF_LENGTH_TYPE;
+    int len;                                        //字符串长度
+}GBKBUF_LENGTH_TYPE;                                //GBK编码缓存和长度结构体
 
-
-#define ChineseHintAreaGBKBufSize 20    //中文提示区字符GBK码缓存区的大小
 /*内部变量声明----------------------------------------------------------------*/
-///添加内部变量
-static unsigned short ChineseHintAreaGBKBuf[ChineseHintAreaGBKBufSize];  //中文提示区字符GBK码缓存区
-static unsigned char  ChineseHintAreaGBKLen;                             //中文提示区有效GBK码数量
+
 /* 中文提示区LCD的备份缓存数组，用于左右滚动显示 大小是中文提示区缓存数组的2倍 */
 static unsigned char ChineseHintArea_LCDRAM_BackupBuf[(ChineseHintAreaEndSeg-ChineseHintAreaStartSeg)*2][ChineseHintAreaEndPageCom-ChineseHintAreaStartPageCom];
+/* 中文提示区的显示内容的GBK缓存区和字符串长度 */
 static GBKBUF_LENGTH_TYPE ChineseHintAreaGBKStruct;
+/* 中文提示区是否启用动态显示标志，0不启用，1是代表启用，注意，初始化时默认启用，每次填中文提示区时先清零 */
 static unsigned char  ChineseHintArea_RollDisplay;
 
 
@@ -46,6 +46,9 @@ static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len
 static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* objbuf,unsigned char decimalpoint);
 const unsigned char* Get_CharBufAddress(unsigned short gbkcode);
 static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint);
+
+static void  ChineseHintAreaGBKStruct_Init(void);
+
 
 static void Clear_ChineseHintArea_LCDRAM_BackupBuf(void);
 static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit);
@@ -196,7 +199,7 @@ const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
  * @param  gbkbufpoint: 转化成的GBK码存放数组的地址指针
  * @retval GBK码数量
  */
-static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* gbkbufpoint)
+static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint)
 {
     unsigned char i;
     unsigned char charnumberpoint=0;
@@ -230,6 +233,106 @@ static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint,unsigned short* g
 
     return charnumberpoint;              //退出
 
+
+}
+
+/** 
+ * @brief  中文提示区的GBK码缓存区初始化
+ * @note   
+ * @retval None
+ */
+static void  ChineseHintAreaGBKStruct_Init(void)
+{
+    int i;
+    for(i=0;i<ChineseHintAreaGBKBufSize;i++)
+    {
+        ChineseHintAreaGBKStruct.GBKBuf[i] = 0;
+    }
+
+    ChineseHintAreaGBKStruct.len = 0;
+}
+
+/** 
+ * @brief  根据字符串内容，转化成GBK码存放到ChineseHintAreaGBKStruct中
+ * @note   
+ * @param  number: ChineseHintAreaGBKStruct缓存数组的下标
+ * @param  *str: 字符串
+ * @retval None
+ */
+static void Write_Str_ChineseHintAreaGBKStruct(int number,char *str)
+{
+    unsigned char i;
+
+    int offset=0;
+    
+    for(i=0;i<(42-number);i++)           //赋值字符串的GBK代码解析并转存，同时反馈长度
+    {
+        if(*(str+i) == 0)  //碰到\n 代表已经结束
+        {
+           break;              //退出
+        }
+        else if(((*(str+i))&0x80) == 0x80)      //最高位为1，代表是汉字编码一部分
+        {
+            i++;                                //汉字占2字节                  
+            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //得到2字节的GBK码
+                     
+        }
+        else                                //最高位不是1，且不是\n 就代表是字母或者数字，只占1字节
+        {
+            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  *(str+i);  //得到2字节的GBK码，高位字节为00
+        }        
+        //能执行到这里，说明一个字符解析成功
+        offset++;                           //GBK编码数组指针加1
+    }
+
+    //str的字符串全部读出来了，或者数组全满了
+    if(i == (42-number))
+    {
+      ChineseHintAreaGBKStruct.len =  ChineseHintAreaGBKBufSize; 
+    }
+    else
+    {
+        ChineseHintAreaGBKStruct.len =  strlen(str);
+    }
+
+}
+
+
+/** 
+ * @brief  将一个gbk编码存放到ChineseHintAreaGBKStruct中
+ * @note   
+ * @param  number: ChineseHintAreaGBKStruct缓存数组的下标
+ * @param  gbkcode: gbk编码
+ * @retval None
+ */
+static void Write_Gbk_ChineseHintAreaGBKStruct(int number,short gbkcode)
+{
+    ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //得到2字节的GBK码    
+}
+
+/** 
+ * @brief  获取ChineseHintAreaGBKStruct有效GBK码的个数
+ * @note   
+ * @retval GBK码个数
+ */
+static int Get_ChineseHintAreaGBKStruct_Len(void)
+{
+    int i;
+
+    ChineseHintAreaGBKStruct.len=0;
+
+    for(i=0;i<ChineseHintAreaGBKBufSize;i++)
+    {
+
+        if(ChineseHintAreaGBKStruct.GBKBuf[i] != 0 )
+        {
+            ChineseHintAreaGBKStruct++;
+        }
+        else
+        {
+            break;
+        }
+    }
 }
 
 /*操作LCDRAM_BackupBuf数组函数------------------------*/
@@ -506,193 +609,6 @@ static void Fill_CurrentCombinedActivePowerEnergyT0(void)
     #endif
     Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
 }
-/** 
-* @brief  填充“上1月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last1CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上1月组合有功总电量";
-    #else
-    str = "上1月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-
-
-/** 
-* @brief  填充“上2月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last2CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上2月组合有功总电量";
-    #else
-    str = "上2月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-
-
-/** 
-* @brief  填充“上3月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last3CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上3月组合有功总电量";
-    #else
-    str = "上3月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-
-
-/** 
-* @brief  填充“上4月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last4CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上4月组合有功总电量";
-    #else
-    str = "上4月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上5月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last5CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上5月组合有功总电量";
-    #else
-    str = "上5月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上6月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last6CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上6月组合有功总电量";
-    #else
-    str = "上6月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上7月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last7CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上7月组合有功总电量";
-    #else
-    str = "上7月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上8月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last8CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上8月组合有功总电量";
-    #else
-    str = "上8月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上9月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last9CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上9月组合有功总电量";
-    #else
-    str = "上9月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上10月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last10CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上10月组合有功总电量";
-    #else
-    str = "上10月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上11月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last11CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上11月组合有功总电量";
-    #else
-    str = "上11月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}     
-/** 
-* @brief  填充“上12月组合有功总电量”到中文提示区
-* @note   单相不显示“组合”
-* @retval None
-*/
-static void Fill_Last12CombinedActivePowerEnergyT0(void)
-{
-    unsigned char* str;
-    #if (MeterType == ThreePhaseMeter)
-    str = "上12月组合有功总电量";
-    #else
-    str = "上12月有功总电量";
-    #endif
-    Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
-}
-
 
 /** 
  * @brief  填充“当前”或者“上x月”到中文提示区
@@ -1259,13 +1175,97 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
     unsigned char i;
     unsigned char segpoint;
     char* str;
+    int len;
     Clear_ChineseHintArea_Of_LCDRAM_Buf();      //清空LCDRAM_Buf中的中文提示区
-    
-    for(i=0;i<ChineseHintAreaGBKBufSize;i++)    //清空GBK码数组缓存区
+    Clear_ChineseHintArea_LCDRAM_BackupBuf();   //清零中文提示区的备用数组
+    ChineseHintAreaGBKStruct_Init();            //中文提示区的GBK码缓存数组和有效GBK码数量清零
+    len = 0;
+    //时间
+    switch(date)
     {
-        ChineseHintAreaGBKStruct.GBKBuf[i] = 0;
+        case 0:
+            str = "当前";
+        break;
+        case 1:
+            str = "上1月";
+        break;
+        case 2:
+            str = "上2月";
+        break;
+        case 3:
+            str = "上3月";
+        break;
+        case 4:
+            str = "上4月";
+        break;
+        case 5:
+            str = "上5月";
+        break;
+        case 6:
+            str = "上6月";
+        break;
+        case 7:
+            str = "上7月";
+        break;
+        case 8:
+            str = "上8月";
+        break;
+        case 9:
+            str = "上9月";
+        break;
+        case 10:
+            str = "上10月";
+        break;
+        case 11:
+            str = "上11月";
+        break;
+        case 12:
+            str = "上12月";
+        break;
+        case 13:
+            str = "上13月";
+        break;
+        case 14:
+            str = "上14月";
+        break;
+        case 15:
+            str = "上15月";
+        break;
+        case 16:
+            str = "上16月";
+        break;
+        case 17:
+            str = "上17月";
+        break;
+        case 18:
+            str = "上18月";
+        break;
+        case 19:
+            str = "上19月";
+        break;
+        case 20:
+            str = "上20月";
+        break;
+        case 21:
+            str = "上21月";
+        break;
+        case 22:
+            str = "上22月";
+        break;
+        case 23:
+            str = "上23月";
+        break;
+        case 24:
+            str = "上24月";
+        break;
+        default:
+            str = "0";
+        break;
     }
-    ChineseHintAreaGBKStruct.len = 0;           //字符串长度清零
+    
+    Write_Str_ChineseHintAreaGBKStruct(0,str);          //中文提示区的GBK码缓存数组起始地址存储str字符串的gbk码
+    len += strlen(str);                                 //确定字符串长度
+    //相位
     switch(phase)
     {   
         case APhase:
@@ -1281,27 +1281,129 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
         break;
 
         default:
+            str = "0";
+        break;
+    }
+    if(phase != TotalPhase)
+    {
+        Write_Str_ChineseHintAreaGBKStruct(len,str);      //中文提示区的GBK码缓存数组起始地址存储str字符串的gbk码
+        len += strlen(str);                               //确定字符串长度        
+    }
+
+    //电量种类
+    switch(engerytype)
+    {
+        case CombinedActivePowerEnergy:
+            #if (MeterType == ThreePhaseMeter)
+            str = "组合有功";
+            #else
+            str = "有功";
+            #endif
+        break;
+        case PositiveActivePowerEnergy:
+            str = "正向有功";
+        break;
+        case ReverseActivePowerEnergy:
+            str = "反向有功";
+        break;
+        case CombinedOneReactivePowerEnergy:
+            str = "组合无功1";
+        break;
+        case CombinedTwoReactivePowerEnergy:
+            str = "组合无功2";
+        break;
+        case PositiveReactivePowerEnergy:
+            str = "正向无功";
+        break;
+        case ReverseReactivePowerEnergy:
+            str = "反向无功";
+        break;
+        case FirstQuadrantReactivePowerEnergy:
+            str = "第1象限无功";
+        break;
+        case SecondQuadrantReactivePowerEnergy:
+            str = "第2象限无功";
+        break;
+        case ThirdQuadrantReactivePowerEnergy:
+            str = "第3象限无功";
+        break;
+        case FourthQuadrantReactivePowerEnergy:
+            str = "第4象限无功";
+        break;
+        case PositiveApparentEnergy:
+            str = "正向视在";
+        break;
+        case ReverseApparentEnergy:
+            str = "反向视在";
+        break;
+        default:
+            str = "0"
+        break;
+    }
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //中文提示区的GBK码缓存数组起始地址存储str字符串的gbk码
+    len += strlen(str);                                 //确定字符串长度    
+    
+    //费率
+    switch(date)
+    {
+        case 0:
+            str = "总";
+        break;
+        case 1:
+            str = "T1";
+        break;
+        case 2:
+            str = "T2";
+        break;
+        case 3:
+            str = "T3";
+        break;
+        case 4:
+            str = "T4";
+        break;
+        case 5:
+            str = "T5";
+        break;
+        case 6:
+            str = "T6";
+        break;
+        case 7:
+            str = "T7";
+        break;
+        case 8:
+            str = "T8";
+        break;
+        case 9:
+            str = "T9";
+        break;
+        case 10:
+            str = "T10";
+        break;
+        case 11:
+            str = "T11";
+        break;
+        case 12:
+            str = "T12";
+        break;
+        case 13:
+            str = "T13";
+        break;
+        case 14:
+            str = "T14";
+        break;
+        default:
+            str = "0"
         break;
     }
 
-    if(phase != TotalPhase)
-    {
-         ChineseHintAreaGBKStruct.len +=strlen(str);    //得到长度
-         for(i=0;i<(unsigned char)strlen(str);i++)
-    }
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //中文提示区的GBK码缓存数组起始地址存储str字符串的gbk码
+    len += strlen(str);  
+
+    str = "电量"
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //中文提示区的GBK码缓存数组起始地址存储str字符串的gbk码
+    len += strlen(str);  
 
 
-
-
-    segpoint = ChineseHintAreaStartSeg;  
-    //显示相位
-    segpoint = Fill_Phase_In_ChineseHintArea(segpoint,phase);
-    //显示当前或上x月
-    segpoint = Fill_CurrentAndLastXMonth_In_ChineseHintArea(segpoint,date);
-    //显示电量种类
-    segpoint = Fill_EngeryType_In_ChineseHintArea(segpoint,engerytype);
-    //显示费率电量
-    segpoint = Fill_EngeryRate_In_ChineseHintArea(segpoint,rate);
 }
 /** 
  * @brief  填充“当前日期”到中文提示区
