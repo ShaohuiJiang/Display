@@ -5,43 +5,43 @@
 * @date      : Sat Apr 21 2018
 * @brief     : 
 ********************************************************************************
-* @attention :Èç¹û±¾ÎÄ±¾ÖÐ´æÔÚºº×Ö±äÁ¿£¬ÎÄ±¾Òª×ª»¯³ÉGB2312±àÂë¸ñÊ½±£´æºÍ´ò¿ª
+* @attention :å¦‚æžœæœ?–‡æœ?¸­å­˜åœ¨æ±‰å­—å˜é‡ï¼Œæ–‡æœ??è½?Œ–æˆGB2312ç¼–ç æ ¼å¼ä¿å­˜å’Œæ‰“å¼€
 *
 *
 */
-/*Í·ÎÄ¼þ----------------------------------------------------------------------*/
-///Ìí¼ÓÍ·ÎÄ¼þ
+/*å¤´æ–‡ä»?----------------------------------------------------------------------*/
+///æ·»åŠ å¤´æ–‡ä»?
 #include "Display.h"
 #include "LCD.h"
 #include "CharLib.h"
 #include "LCDConfig.h"
 #include "string.h"
-/*ºê¶¨Òå----------------------------------------------------------------------*/
-///Ìí¼Óºê¶¨Òå
-#define ChineseHintAreaGBKBufSize 20                //ÖÐÎÄÌáÊ¾Çø×Ö·ûGBKÂë»º´æÇøµÄ´óÐ¡
+/*å®å®šä¹?----------------------------------------------------------------------*/
+///æ·»åŠ å®å®šä¹?
+#define ChineseHintAreaGBKBufSize 20                //ä¸?–‡æç¤ºåŒºå­—ç¬?BKç ç¼“å­˜åŒºçš„å¤§å°?
 
 
 typedef struct
 {
-    short GBKBuf[ChineseHintAreaGBKBufSize];        //×Ö·û´®GBKÂë»º´æÇø
-    int len;                                        //×Ö·û´®³¤¶È
-}GBKBUF_LENGTH_TYPE;                                //GBK±àÂë»º´æºÍ³¤¶È½á¹¹Ìå
+    short GBKBuf[ChineseHintAreaGBKBufSize];        //å­—ç?ä¸²GBKç ç¼“å­˜åŒº
+    int len;                                        //å­—ç?ä¸²é•¿åº?
+}GBKBUF_LENGTH_TYPE;                                //GBKç¼–ç ç¼“å­˜å’Œé•¿åº¦ç»“æž„ä½“
 
-/*ÄÚ²¿±äÁ¿ÉùÃ÷----------------------------------------------------------------*/
+/*å†…éƒ¨å˜é‡å£°æ˜Ž----------------------------------------------------------------*/
 
-/* ÖÐÎÄÌáÊ¾ÇøLCDµÄ±¸·Ý»º´æÊý×é£¬ÓÃÓÚ×óÓÒ¹ö¶¯ÏÔÊ¾ ´óÐ¡ÊÇÖÐÎÄÌáÊ¾Çø»º´æÊý×éµÄ2±¶ */
+/* ä¸?–‡æç¤ºåŒºLCDçš„å?ä»½ç¼“å­˜æ•°ç»„ï¼Œç”¨äºŽå·¦å³æ»šåŠ¨æ˜¾ç¤º å¤§å°æ˜?¸­æ–‡æç¤ºåŒºç¼“å­˜æ•°ç»„çš?2å€? */
 static unsigned char ChineseHintArea_LCDRAM_BackupBuf[(ChineseHintAreaEndSeg-ChineseHintAreaStartSeg)*2][ChineseHintAreaEndPageCom-ChineseHintAreaStartPageCom];
-/* ÖÐÎÄÌáÊ¾ÇøµÄÏÔÊ¾ÄÚÈÝµÄGBK»º´æÇøºÍ×Ö·û´®³¤¶È */
+/* ä¸?–‡æç¤ºåŒºçš„æ˜¾ç¤ºå†…å?çš„GBKç¼“å­˜åŒºå’Œå­—ç?ä¸²é•¿åº? */
 static GBKBUF_LENGTH_TYPE ChineseHintAreaGBKStruct;
-/* ÖÐÎÄÌáÊ¾ÇøÊÇ·ñÆôÓÃ¶¯Ì¬ÏÔÊ¾±êÖ¾£¬0²»ÆôÓÃ£¬1ÊÇ´ú±íÆôÓÃ£¬×¢Òâ£¬³õÊ¼»¯Ê±Ä¬ÈÏÆôÓÃ£¬Ã¿´ÎÌîÖÐÎÄÌáÊ¾ÇøÊ±ÏÈÇåÁã */
+/* ä¸?–‡æç¤ºåŒºæ˜¯å¦å¯ç”¨åŠ¨æ€æ˜¾ç¤ºæ ‡å¿—ï¼Œ0ä¸å¯ç”?¼Œ1æ˜?»£è¡¨å¯ç”?¼Œæ³¨æ„ï¼Œåˆå§‹åŒ–æ—¶é»˜è®¤å¯ç”?¼Œæ¯æ?å¡?¸­æ–‡æç¤ºåŒºæ—¶å…ˆæ¸…é›¶ */
 static unsigned char  ChineseHintArea_RollDisplay;
 
 
-/*ÄÚ²¿±äÁ¿¶¨Òå----------------------------------------------------------------*/
+/*å†…éƒ¨å˜é‡å®šä¹‰----------------------------------------------------------------*/
 
 
 
-/*ÉùÃ÷ÄÚ²¿º¯Êý----------------------------------------------------------------*/
+/*å£°æ˜Žå†…éƒ¨å‡½æ•°----------------------------------------------------------------*/
 static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len);
 static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* objbuf,unsigned char decimalpoint);
 const unsigned char* Get_CharBufAddress(unsigned short gbkcode);
@@ -56,13 +56,13 @@ static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,
 static void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset);
 static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen);
 
-/*¶¨ÒåÄÚ²¿º¯Êý----------------------------------------------------------------*/
+/*å®šä¹‰å†…éƒ¨å‡½æ•°----------------------------------------------------------------*/
 /** 
- * @brief  »ñÈ¡Êý×éÖÐ¸ßÎ»ÎÞÐ§0µÄ¸öÊý
- * @note   Êý×é±ØÐëÎªBCD¸ñÊ½£¬²¢Ä¬ÈÏµÍ×Ö½ÚÊý×é´æ·ÅµÍÎ»Êý¾Ý
- * @param  buf: ±»ÅÐ¶ÏµÄÊý×éÆðÊ¼µØÖ·
- * @param  len: ±»ÅÐ¶ÏµÄÊý¾Ý×Ö½Ú³¤¶È  0~10
- * @retval ÎÞÐ§0¸öÊý
+ * @brief  èŽ·å–æ•°ç»„ä¸?«˜ä½æ— æ•?0çš„ä¸ªæ•?
+ * @note   æ•°ç»„å¿…é¡»ä¸ºBCDæ ¼å¼ï¼Œå¹¶é»˜è?ä½Žå­—èŠ‚æ•°ç»„å­˜æ”¾ä½Žä½æ•°æ?
+ * @param  buf: è¢?ˆ¤æ–?š„æ•°ç»„èµ·å?åœ°å€
+ * @param  len: è¢?ˆ¤æ–?š„æ•°æ®å­—èŠ‚é•¿åº¦  0~10
+ * @retval æ— æ•ˆ0ä¸?•°
  */
 static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len)
 {
@@ -70,57 +70,57 @@ static unsigned char Get_InvalidZero_Number(unsigned char* buf,unsigned char len
     unsigned char i;
     unsigned char number;
 
-    if(len>10)          //³¬³¤ÁË£¬·µ»Ø
+    if(len>10)          //è¶…é•¿äº†ï¼Œè¿”å›ž
     {
         return 255;
     }
 
-    number = 0;         //³õÊ¼»¯
+    number = 0;         //åˆå?åŒ?
 
-    for(i=0;i<len;i++)          //¿½±´×î¸ßÎ»×Ö½ÚÊý¾Ý²¢ÅÐ¶ÏÊÇ·ñÎª0£¬²¢Ñ­»·
+    for(i=0;i<len;i++)          //æ‹·è´æœ€é«˜ä½å­—èŠ‚æ•°æ®å¹¶åˆ¤æ–?˜¯å¦ä¸º0ï¼Œå¹¶å¾?Ž¯
     {
         temp = *(buf+len-1-i); 
-        if((temp&0xf0) == 0x00)   //ÏÈÅÐ¶Ï¸ßÎ»£ºµÈÓÚ0£¬¾ÍÎÞÐ§0Êý¼Ó1£¬·ñÔò¾ÍÖ±½Ó·µ»Ø
+        if((temp&0xf0) == 0x00)   //å…ˆåˆ¤æ–?«˜ä½ï¼šç­‰äºŽ0ï¼Œå°±æ— æ•ˆ0æ•°åŠ 1ï¼Œå¦åˆ™å°±ç›´æŽ¥è¿”å›ž
         {
         number++;
         }
-        else                    //Åöµ½·ÇÁã£¬½áÊøÅÐ¶Ï£¬²¢·µ»Ø
+        else                    //ç¢°åˆ°éžé›¶ï¼Œç»“æŸåˆ¤æ–?¼Œå¹¶è¿”å›?
         {
             return number;
         }            
-        if((temp&0x0f) == 0x00)   //ÔÙÅÐ¶ÏµÍÎ»£ºµÈÓÚ0£¬¾ÍÎÞÐ§0Êý¼Ó1£¬·ñÔò¾ÍÖ±½Ó·µ»Ø
+        if((temp&0x0f) == 0x00)   //å†åˆ¤æ–?½Žä½ï¼šç­‰äºŽ0ï¼Œå°±æ— æ•ˆ0æ•°åŠ 1ï¼Œå¦åˆ™å°±ç›´æŽ¥è¿”å›ž
         {
             number++;
         }
-        else                    //Åöµ½·ÇÁã£¬½áÊøÅÐ¶Ï£¬²¢·µ»Ø
+        else                    //ç¢°åˆ°éžé›¶ï¼Œç»“æŸåˆ¤æ–?¼Œå¹¶è¿”å›?
         {
             return number;
         }
 
     }
     
-    return number;              //Ñ­»·ÍêÁË£¬Ò²·µ»Ø
+    return number;              //å¾?Ž¯å®Œäº†ï¼Œä¹Ÿè¿”å›ž
 }
 /** 
- * @brief  µ÷Õû4Î»Ð¡ÊýµÄ6×Ö½ÚÊý×é±£ÁôµÄÐ¡ÊýÎ»¸´ÖÆµ½Ä¿±êÊý×é
- * @note   ×¢ÒâÔ´Êý×éµÄ¸ñÊ½£¬±ØÐëÂú×ã6×Ö½Ú£¬²¢Ä¬ÈÏ×îµÍ×Ö½Ú2¸öÊý×éÔªËØÎªÐ¡Êý
- *         ¸Ãº¯ÊýÖ»ÒªÊÇÎªÁË´¦Àí4Î»Ð¡ÊýµÄµçÁ¿
- * @param  srcbuf: 6×Ö½ÚÊý×é£¬×îµÍ×Ö½Ú2¸öÊý×éÔªËØÎªÐ¡Êý£¬BCD¸ñÊ½
- * @param  objbuf: 4×Ö½ÚÊý×é£¬BCD¸ñÊ½
- * @param  decimalpoint: ×¼±¸±£ÁôµÄÐ¡Êý¸öÊý£¬0~4
+ * @brief  è°ƒæ•´4ä½å°æ•°çš„6å­—èŠ‚æ•°ç»„ä¿ç•™çš„å°æ•°ä½å¤åˆ¶åˆ°ç›®æ ‡æ•°ç»?
+ * @note   æ³¨æ„æºæ•°ç»„çš„æ ¼å¼ï¼Œå¿…é¡»æ»¡è¶?6å­—èŠ‚ï¼Œå¹¶é»˜è?æœ€ä½Žå­—èŠ?2ä¸?•°ç»„å…ƒç´ ä¸ºå°æ•°
+ *         è¯¥å‡½æ•°åªè¦æ˜¯ä¸ºäº†å¤„ç†4ä½å°æ•°çš„ç”µé‡
+ * @param  srcbuf: 6å­—èŠ‚æ•°ç»„ï¼Œæœ€ä½Žå­—èŠ?2ä¸?•°ç»„å…ƒç´ ä¸ºå°æ•°ï¼ŒBCDæ ¼å¼
+ * @param  objbuf: 4å­—èŠ‚æ•°ç»„ï¼ŒBCDæ ¼å¼
+ * @param  decimalpoint: å‡†å?ä¿ç•™çš„å°æ•°ä¸ªæ•°ï¼Œ0~4
  * @retval None
  */
 static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* objbuf,unsigned char decimalpoint)
 {
     
-    if(decimalpoint>4)  //³¬·¶Î§ÁË£¬Ö±½Ó·µ»Ø
+    if(decimalpoint>4)  //è¶…èŒƒå›´äº†ï¼Œç›´æŽ¥è¿”å›?
     {
         return;
     }
 
-    switch(decimalpoint)//¸ù¾ÝÐ¡ÊýÎ»µ÷ÕûÄ¿±êÊý×é
+    switch(decimalpoint)//æ ¹æ®å°æ•°ä½è°ƒæ•´ç›®æ ‡æ•°ç»?
     {
-        case 0:             //ÎÞÐ¡ÊýÎ»
+        case 0:             //æ— å°æ•°ä½
         {
             *(objbuf)   = *(srcbuf+2);
             *(objbuf+1) = *(srcbuf+3);
@@ -128,7 +128,7 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
             *(objbuf+3) = *(srcbuf+5);
         }
         break;
-        case 1:             //1Î»Ð¡ÊýÎ»
+        case 1:             //1ä½å°æ•°ä½
         {
             *(objbuf)   = ((*(srcbuf+1)>>4)&0x0f)|((*(srcbuf+2)<<4)&0xf0);
             *(objbuf+1) = ((*(srcbuf+2)>>4)&0x0f)|((*(srcbuf+3)<<4)&0xf0);
@@ -137,7 +137,7 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
         }
         break;
 
-        case 2:             //2Î»Ð¡ÊýÎ»
+        case 2:             //2ä½å°æ•°ä½
         {
 
             *(objbuf)   = *(srcbuf+1);
@@ -147,7 +147,7 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
         }
         break;
 
-        case 3:             //3Î»Ð¡ÊýÎ»
+        case 3:             //3ä½å°æ•°ä½
         {
             *(objbuf)   = ((*(srcbuf+0)>>4)&0x0f)|((*(srcbuf+1)<<4)&0xf0);
             *(objbuf+1) = ((*(srcbuf+1)>>4)&0x0f)|((*(srcbuf+2)<<4)&0xf0);
@@ -156,7 +156,7 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
 
         }
         break;
-        case 4:             //4Î»Ð¡ÊýÎ»
+        case 4:             //4ä½å°æ•°ä½
         {
             *(objbuf)   = *(srcbuf);
             *(objbuf+1) = *(srcbuf+1);
@@ -169,12 +169,12 @@ static void  Adjust_DecimalpointOfValue(unsigned char* srcbuf,unsigned char* obj
     }   
 }
 /** 
- * @brief  ¸ù¾ÝGBKÂë·µ»Ø×Ö·û×Ö¿âÄÚÈÝËùÔÚÎ»ÖÃ
+ * @brief  æ ¹æ®GBKç è¿”å›žå­—ç¬¦å­—åº“å†…å®¹æ‰€åœ¨ä½ç½?
  * @note   
- * @param  gbkcode: gbkÂë
- * @retval ËùÔÚÎ»ÖÃµÄÖ¸Õë
+ * @param  gbkcode: gbkç ?
+ * @retval æ‰€åœ¨ä½ç½?š„æŒ‡é’ˆ
  */
-const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
+const unsigned char* Get_CharBufAddress(short gbkcode)
 {   
     unsigned char i;
 
@@ -185,7 +185,7 @@ const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
             return charaddressbuf[i].CharAddress;
         }
     }
-    //ÕÒ²»µ½£¬¾Í·µ»ØÊý×Ö0µÄÎ»ÖÃ
+    //æ‰¾ä¸åˆ°ï¼Œå°±è¿”å›žæ•°å­?0çš„ä½ç½?
     #if (MeterType == ThreePhaseMeter)
     return &ChineseHint_Char_6p12p[0][0];
     #else
@@ -193,51 +193,51 @@ const unsigned char* Get_CharBufAddress(unsigned short gbkcode)
     #endif
 }
 /** 
- * @brief   ½«×Ö·û´®×ª»¯³ÉGBKÂë
+ * @brief   å°†å­—ç¬¦ä¸²è½?Œ–æˆGBKç ?
  * @note   
- * @param  strpoint: ×Ö·û´®Ö¸Õë
- * @param  gbkbufpoint: ×ª»¯³ÉµÄGBKÂë´æ·ÅÊý×éµÄµØÖ·Ö¸Õë
- * @retval GBKÂëÊýÁ¿
+ * @param  strpoint: å­—ç?ä¸²æŒ‡é’?
+ * @param  gbkbufpoint: è½?Œ–æˆçš„GBKç å­˜æ”¾æ•°ç»„çš„åœ°å€æŒ‡é’ˆ
+ * @retval GBKç æ•°é‡?
  */
 static unsigned char  Get_GBKCodeOfStr(unsigned char* strpoint)
 {
     unsigned char i;
     unsigned char charnumberpoint=0;
     
-    for(i=0;i<42;i++)           //¸³Öµ×Ö·û´®µÄGBK´úÂë½âÎö²¢×ª´æ£¬Í¬Ê±·´À¡³¤¶È
+    for(i=0;i<42;i++)           //èµ‹å€¼å­—ç¬¦ä¸²çš„GBKä»£ç è§£æžå¹¶è½¬å­˜ï¼ŒåŒæ—¶åé?é•¿åº¦
     {
-        if(*(strpoint+i) == 0)  //Åöµ½\n ´ú±íÒÑ¾­½áÊø
+        if(*(strpoint+i) == 0)  //ç¢°åˆ°\n ä»£è¡¨å·²ç»ç»“æŸ
         {
-           return charnumberpoint;              //ÍË³ö
+           return charnumberpoint;              //é€€å‡?
         }
-        else if(((*(strpoint+i))&0x80) == 0x80)      //×î¸ßÎ»Îª1£¬´ú±íÊÇºº×Ö±àÂëÒ»²¿·Ö
+        else if(((*(strpoint+i))&0x80) == 0x80)      //æœ€é«˜ä½ä¸?1ï¼Œä»£è¡¨æ˜¯æ±‰å­—ç¼–ç ä¸€éƒ¨åˆ†
         {
             i++;                            
-            if(((*(strpoint+i))&0x80) == 0x80)      //×î¸ßÎ»Îª1£¬´ú±íÊÇºº×Ö±àÂëÒ»²¿·Ö
+            if(((*(strpoint+i))&0x80) == 0x80)      //æœ€é«˜ä½ä¸?1ï¼Œä»£è¡¨æ˜¯æ±‰å­—ç¼–ç ä¸€éƒ¨åˆ†
             {
-               *gbkbufpoint =  (*(strpoint+i-1))*256+(*(strpoint+i));       //µÃµ½2×Ö½ÚµÄGBKÂë
+               *gbkbufpoint =  (*(strpoint+i-1))*256+(*(strpoint+i));       //å¾—åˆ°2å­—èŠ‚çš„GBKç ?
             }
-            else                           //Ç°Ò»¸öÊÇºº×Ö±àÂëÒ»²¿·Ö£¬ºóÒ»¸ö²»ÊÇ£¬²»·ûºÏ¹æÂÉ£¬²»½âÎö
+            else                           //å‰ä¸€ä¸?˜¯æ±‰å­—ç¼–ç ä¸€éƒ¨åˆ†ï¼ŒåŽä¸€ä¸?¸æ˜?¼Œä¸ç?åˆè?å¾‹ï¼Œä¸è§£æž?
             {
-                continue;                  //Í£Ö¹ÕâÒ»´Î£¬¼ÌÐøÏÂÒ»´ÎÑ­»·
+                continue;                  //åœæ?è¿™ä¸€æ¬¡ï¼Œç»§ç»­ä¸‹ä¸€æ¬¡å¾ªçŽ?
             }            
         }
-        else                              //×î¸ßÎ»²»ÊÇ1£¬ÇÒ²»ÊÇ\n ¾Í´ú±íÊÇ×ÖÄ¸»òÕßÊý×Ö
+        else                              //æœ€é«˜ä½ä¸æ˜¯1ï¼Œä¸”ä¸æ˜¯\n å°±ä»£è¡¨æ˜¯å­—æ¯æˆ–è€…æ•°å­?
         {
-            *gbkbufpoint =  *(strpoint+i); //µÃµ½2×Ö½ÚµÄGBKÂë£¬¸ßÎ»×Ö½ÚÎª00
+            *gbkbufpoint =  *(strpoint+i); //å¾—åˆ°2å­—èŠ‚çš„GBKç ï¼Œé«˜ä½å­—èŠ‚ä¸?00
         }        
-        //ÄÜÖ´ÐÐµ½ÕâÀï£¬ËµÃ÷Ò»¸ö×Ö·û½âÎö³É¹¦
-        gbkbufpoint++;                      //GBK±àÂëÊý×éÖ¸Õë¼Ó1
-        charnumberpoint++;                  //ÓÐÐ§×Ö·ûÊý¼Ó1 
+        //èƒ½æ‰§è¡Œåˆ°è¿™é‡Œï¼Œè?æ˜Žä¸€ä¸?­—ç¬¦è§£æžæˆåŠ?
+        gbkbufpoint++;                      //GBKç¼–ç æ•°ç»„æŒ‡é’ˆåŠ?1
+        charnumberpoint++;                  //æœ‰æ•ˆå­—ç?æ•°åŠ 1 
     }
 
-    return charnumberpoint;              //ÍË³ö
+    return charnumberpoint;              //é€€å‡?
 
 
 }
 
 /** 
- * @brief  ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÇø³õÊ¼»¯
+ * @brief  ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜åŒºåˆå?åŒ?
  * @note   
  * @retval None
  */
@@ -253,10 +253,10 @@ static void  ChineseHintAreaGBKStruct_Init(void)
 }
 
 /** 
- * @brief  ¸ù¾Ý×Ö·û´®ÄÚÈÝ£¬×ª»¯³ÉGBKÂë´æ·Åµ½ChineseHintAreaGBKStructÖÐ
+ * @brief  æ ¹æ®å­—ç?ä¸²å†…å®¹ï¼Œè½?Œ–æˆGBKç å­˜æ”¾åˆ°ChineseHintAreaGBKStructä¸?
  * @note   
- * @param  number: ChineseHintAreaGBKStruct»º´æÊý×éµÄÏÂ±ê
- * @param  *str: ×Ö·û´®
+ * @param  number: ChineseHintAreaGBKStructç¼“å­˜æ•°ç»„çš„ä¸‹æ ?
+ * @param  *str: å­—ç?ä¸?
  * @retval None
  */
 static void Write_Str_ChineseHintAreaGBKStruct(int number,char *str)
@@ -265,27 +265,27 @@ static void Write_Str_ChineseHintAreaGBKStruct(int number,char *str)
 
     int offset=0;
     
-    for(i=0;i<(42-number);i++)           //¸³Öµ×Ö·û´®µÄGBK´úÂë½âÎö²¢×ª´æ£¬Í¬Ê±·´À¡³¤¶È
+    for(i=0;i<(42-number);i++)           //èµ‹å€¼å­—ç¬¦ä¸²çš„GBKä»£ç è§£æžå¹¶è½¬å­˜ï¼ŒåŒæ—¶åé?é•¿åº¦
     {
-        if(*(str+i) == 0)  //Åöµ½\n ´ú±íÒÑ¾­½áÊø
+        if(*(str+i) == 0)  //ç¢°åˆ°\n ä»£è¡¨å·²ç»ç»“æŸ
         {
-           break;              //ÍË³ö
+           break;              //é€€å‡?
         }
-        else if(((*(str+i))&0x80) == 0x80)      //×î¸ßÎ»Îª1£¬´ú±íÊÇºº×Ö±àÂëÒ»²¿·Ö
+        else if(((*(str+i))&0x80) == 0x80)      //æœ€é«˜ä½ä¸?1ï¼Œä»£è¡¨æ˜¯æ±‰å­—ç¼–ç ä¸€éƒ¨åˆ†
         {
-            i++;                                //ºº×ÖÕ¼2×Ö½Ú                  
-            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //µÃµ½2×Ö½ÚµÄGBKÂë
+            i++;                                //æ±‰å­—å?2å­—èŠ‚                  
+            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //å¾—åˆ°2å­—èŠ‚çš„GBKç ?
                      
         }
-        else                                //×î¸ßÎ»²»ÊÇ1£¬ÇÒ²»ÊÇ\n ¾Í´ú±íÊÇ×ÖÄ¸»òÕßÊý×Ö£¬Ö»Õ¼1×Ö½Ú
+        else                                //æœ€é«˜ä½ä¸æ˜¯1ï¼Œä¸”ä¸æ˜¯\n å°±ä»£è¡¨æ˜¯å­—æ¯æˆ–è€…æ•°å­—ï¼Œå? 1å­—èŠ‚
         {
-            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  *(str+i);  //µÃµ½2×Ö½ÚµÄGBKÂë£¬¸ßÎ»×Ö½ÚÎª00
+            ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  *(str+i);  //å¾—åˆ°2å­—èŠ‚çš„GBKç ï¼Œé«˜ä½å­—èŠ‚ä¸?00
         }        
-        //ÄÜÖ´ÐÐµ½ÕâÀï£¬ËµÃ÷Ò»¸ö×Ö·û½âÎö³É¹¦
-        offset++;                           //GBK±àÂëÊý×éÖ¸Õë¼Ó1
+        //èƒ½æ‰§è¡Œåˆ°è¿™é‡Œï¼Œè?æ˜Žä¸€ä¸?­—ç¬¦è§£æžæˆåŠ?
+        offset++;                           //GBKç¼–ç æ•°ç»„æŒ‡é’ˆåŠ?1
     }
 
-    //strµÄ×Ö·û´®È«²¿¶Á³öÀ´ÁË£¬»òÕßÊý×éÈ«ÂúÁË
+    //strçš„å­—ç¬¦ä¸²å…¨éƒ¨è¯»å‡ºæ¥äº†ï¼Œæˆ–è€…æ•°ç»„å…¨æ»¡äº†
     if(i == (42-number))
     {
       ChineseHintAreaGBKStruct.len =  ChineseHintAreaGBKBufSize; 
@@ -299,21 +299,21 @@ static void Write_Str_ChineseHintAreaGBKStruct(int number,char *str)
 
 
 /** 
- * @brief  ½«Ò»¸ögbk±àÂë´æ·Åµ½ChineseHintAreaGBKStructÖÐ
+ * @brief  å°†ä¸€ä¸ªgbkç¼–ç å­˜æ”¾åˆ°ChineseHintAreaGBKStructä¸?
  * @note   
- * @param  number: ChineseHintAreaGBKStruct»º´æÊý×éµÄÏÂ±ê
- * @param  gbkcode: gbk±àÂë
+ * @param  number: ChineseHintAreaGBKStructç¼“å­˜æ•°ç»„çš„ä¸‹æ ?
+ * @param  gbkcode: gbkç¼–ç 
  * @retval None
  */
 static void Write_Gbk_ChineseHintAreaGBKStruct(int number,short gbkcode)
 {
-    ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //µÃµ½2×Ö½ÚµÄGBKÂë    
+    ChineseHintAreaGBKStruct.GBKBuf[number+offset] =  (*(str+i-1))*256+(*(str+i));       //å¾—åˆ°2å­—èŠ‚çš„GBKç ?    
 }
 
 /** 
- * @brief  »ñÈ¡ChineseHintAreaGBKStructÓÐÐ§GBKÂëµÄ¸öÊý
+ * @brief  èŽ·å–ChineseHintAreaGBKStructæœ‰æ•ˆGBKç çš„ä¸?•°
  * @note   
- * @retval GBKÂë¸öÊý
+ * @retval GBKç ä¸ªæ•?
  */
 static int Get_ChineseHintAreaGBKStruct_Len(void)
 {
@@ -335,9 +335,9 @@ static int Get_ChineseHintAreaGBKStruct_Len(void)
     }
 }
 
-/*²Ù×÷LCDRAM_BackupBufÊý×éº¯Êý------------------------*/
+/*æ“ä½œLCDRAM_BackupBufæ•°ç»„å‡½æ•°------------------------*/
 /** 
- * @brief  Çå¿ÕÖÐÎÄÌáÊ¾Çø±¸·Ý»º´æÊý×éÄÚÈÝ
+ * @brief  æ¸…ç©ºä¸?–‡æç¤ºåŒºå?ä»½ç¼“å­˜æ•°ç»„å†…å®?
  * @note   
  * @retval None
  */
@@ -354,12 +354,12 @@ static void Clear_ChineseHintArea_LCDRAM_BackupBuf(void)
     }
 }
 /** 
- * @brief  LCDRAM_BackupBufÈÎÒâÎ»ÖÃÃèµãº¯Êý
- * @note   (x,y)Î»ÖÃµÄÄ³µã£¬ÏÔÊ¾»òÕß²»ÏÔÊ¾£¬
- * ×¢Òâ£¬Õâ¸öÖ»ÊÇÃèÁË±¸ÓÃ»º´æÇøµÄµã£¬×îÖÕÏÔÊ¾ÐèÒªµ÷ÓÃÆäËüº¯Êý½«±¸ÓÃ»º´æÇøÐ´µ½»º´æÇø£¬ÔÙ½«»º´æÇøÊý¾ÝÐ´µ½LCD
- * @param  x: segµÄÎ»ÖÃ
- * @param  y: comµÄÎ»ÖÃ
- * @param  bit: 0£ºÈ¡·´ 1£ºÕý³£
+ * @brief  LCDRAM_BackupBufä»»æ„ä½ç½®æç‚¹å‡½æ•°
+ * @note   (x,y)ä½ç½®çš„æŸç‚¹ï¼Œæ˜¾ç¤ºæˆ–è€…ä¸æ˜¾ç¤ºï¼?
+ * æ³¨æ„ï¼Œè¿™ä¸?ªæ˜?äº†å?ç”¨ç¼“å­˜åŒºçš„ç‚¹ï¼Œæœ€ç»ˆæ˜¾ç¤ºéœ€è¦è°ƒç”¨å…¶å®ƒå‡½æ•°å°†å¤‡ç”¨ç¼“å­˜åŒºå†™åˆ°ç¼“å­˜åŒºï¼Œå†å°†ç¼“å­˜åŒºæ•°æ®å†™åˆ°LCD
+ * @param  x: segçš„ä½ç½?
+ * @param  y: comçš„ä½ç½?
+ * @param  bit: 0ï¼šå–å? 1ï¼šæ?å¸?
  * @retval None
  */
 static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigned short y,unsigned char bit)
@@ -368,10 +368,10 @@ static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigne
     unsigned short bx;
     unsigned char temp=0;
 
-    if((x>=(seg*2))||y>=com)return;       //³¬³ö·¶Î§
-    pos=y/8;        //µÃµ½Ò³µØÖ·       
+    if((x>=(seg*2))||y>=com)return;       //è¶…å‡ºèŒƒå›´
+    pos=y/8;        //å¾—åˆ°é¡µåœ°å€       
     
-    bx=y%8;         //µÃµ½µãÔÚÒ³µØÖ·µÄbitÎ»
+    bx=y%8;         //å¾—åˆ°ç‚¹åœ¨é¡µåœ°å€çš„bitä½?
     temp=1<<(7-bx);
 
     if(bit)
@@ -384,13 +384,13 @@ static  void ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(unsigned short x,unsigne
     }   
 }
 /** 
- * @brief  ÍùChineseHintArea_LCDRAM_BackupBufµÄÖ¸¶¨Î»ÖÃÏÔÊ¾»òÇå³ýÒ»¸ö×Ö·û(°üÀ¨ºº×Ö¡¢×ÖÄ¸¡¢Êý×Ö¡¢·ûºÅ)
- * @note   Ãèµã·½Ê½ÊÇÖðÁÐÊ½£¬Çå³ýµÄ»°£¬È·±£Í¬Ò»Î»ÖÃÏÔÊ¾ÁË¶ÔÓ¦×Ö·û£¬²»È»²»±£Ö¤Çå³ýÐ§¹û
- * @param  x: Ö¸¶¨ÆðÊ¼Î»ÖÃµÄseg
- * @param  y: Ö¸¶¨ÆðÊ¼Î»ÖÃµÄcom
- * @param  charbufstartaddress: ×Ö·ûµÄ×ÖÄ£ÆðÊ¼µØÖ·
- * @param  size: ×Ö·û³ß´ç
- * @param  displayorclear: clear´ú±íÇå³ý£¬display´ú±íÏÔÊ¾
+ * @brief  å¾€ChineseHintArea_LCDRAM_BackupBufçš„æŒ‡å®šä½ç½?˜¾ç¤ºæˆ–æ¸…é™¤ä¸€ä¸?­—ç¬?(åŒ…æ‹¬æ±‰å­—ã€å­—æ¯ã€æ•°å­—ã€ç?å?)
+ * @note   æç‚¹æ–¹å¼æ˜?€åˆ—å¼ï¼Œæ¸…é™¤çš„è¯ï¼Œç¡®ä¿åŒä¸€ä½ç½®æ˜¾ç¤ºäº†å?åº”å­—ç¬¦ï¼Œä¸ç„¶ä¸ä¿è¯æ¸…é™¤æ•ˆæž?
+ * @param  x: æŒ‡å®šèµ·å?ä½ç½®çš„seg
+ * @param  y: æŒ‡å®šèµ·å?ä½ç½®çš„com
+ * @param  charbufstartaddress: å­—ç?çš„å­—æ¨¡èµ·å§‹åœ°å€
+ * @param  size: å­—ç?å°ºå?
+ * @param  displayorclear: clearä»£è¡¨æ¸…é™¤ï¼Œdisplayä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,unsigned short y,const unsigned char* charbufstartaddress,unsigned int size,unsigned char displayorclear)
@@ -402,9 +402,9 @@ static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,
     y0 = y;
     segnumber = size/100;
     comnumber = size%100;
-    bytesnumber = segnumber*(comnumber/8+((comnumber%8)?1:0));      //µÃµ½ÐèÒªÏÔÊ¾ËùÓÃµÄ×Ö½ÚÊý
+    bytesnumber = segnumber*(comnumber/8+((comnumber%8)?1:0));      //å¾—åˆ°éœ€è¦æ˜¾ç¤ºæ‰€ç”¨çš„å­—èŠ‚æ•?
     
-    for(t=0;t<bytesnumber;t++)                                      //½«ÏÔÊ¾ËùÓÃµÄ×Ö½ÚÈ«²¿Ð´µ½LCDRAM_BufÊý×éÖÐ
+    for(t=0;t<bytesnumber;t++)                                      //å°†æ˜¾ç¤ºæ‰€ç”¨çš„å­—èŠ‚å…¨éƒ¨å†™åˆ°LCDRAM_Bufæ•°ç»„ä¸?
     {     
         temp=*(charbufstartaddress+t);
         for(t1=0;t1<8;t1++) 
@@ -412,15 +412,15 @@ static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,
             if(temp&0x80)
             {
  
-                if((x>=(seg*2))||(y>=com))  //³¬·¶Î§ÁË
+                if((x>=(seg*2))||(y>=com))  //è¶…èŒƒå›´äº†
                 {
-                    return;                 //³¬³öÊý×é·¶Î§µÄ£¬²»Ð´
+                    return;                 //è¶…å‡ºæ•°ç»„èŒƒå›´çš„ï¼Œä¸å†™
                 }
-                if(displayorclear == display)      //Ð´1£¬¼´ÏÔÊ¾
+                if(displayorclear == display)      //å†?1ï¼Œå³æ˜¾ç¤º
                 {
                     ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(x,y,1);
                 }
-                else                                //Ð´0£¬¼´Çå³ý
+                else                                //å†?0ï¼Œå³æ¸…é™¤
                 {
                     ChineseHintArea_LCDRAM_BackupBuf_DrawPoint(x,y,0);
                 }
@@ -437,10 +437,10 @@ static void InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(unsigned short x,
     }
 }
 /** 
- * @brief  ½«ChineseHintArea_LCDRAM_BackupBuf¿½±´µ½LCDRAM_Buf
- * @note   ChineseHintArea_LCDRAM_BackupBufµÄÆðÊ¼Î»ÖÃ+offset¿ªÊ¼¿½±´µ½LCDRAM_Buf[ChineseHintAreaStartSeg~ChineseHintAreaStartSeg+len]
- * @param  len: ¿½±´µÄ³¤¶È
- * @param  offset: Æ«ÒÆÁ¿
+ * @brief  å°†ChineseHintArea_LCDRAM_BackupBufæ‹·è´åˆ°LCDRAM_Buf
+ * @note   ChineseHintArea_LCDRAM_BackupBufçš„èµ·å§‹ä½ç½?+offsetå¼€å§‹æ‹·è´åˆ°LCDRAM_Buf[ChineseHintAreaStartSeg~ChineseHintAreaStartSeg+len]
+ * @param  len: æ‹·è´çš„é•¿åº?
+ * @param  offset: åç§»é‡?
  * @retval None
  */
 static void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char len,unsigned short offset)
@@ -458,10 +458,10 @@ static void Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf(unsigned char le
     }
 }
 /** 
- * @brief  Ìî³äÄÚÈÝµ½ÖÐÎÄÌáÊ¾ÇøµÄ»º´æÊý×éºÍ±¸ÓÃÊý×é
- * @note   ÕâÀïÏÈÐ´µ½±¸ÓÃ»º´æÊý×éÈ»ºóÅÐ¶ÏÊÇ·ñ³¬¹ý»º´æÊý×é´óÐ¡£¬¼ÙÈç³¬¹ý£¬¾ÍÆôÓÃ¶¯Ì¬ÏÔÊ¾
- * @param  strbuf: ×Ö·û´®±äÁ¿ÆðÊ¼µØÖ·
- * @param  SplitScreen: ·ÖÆÁÊÇ·ñÏÔÊ¾»òÕßÏÔÊ¾¼¸ºÅ·ÖÆÁ
+ * @brief  å¡?……å†…å?åˆ°ä¸­æ–‡æç¤ºåŒºçš„ç¼“å­˜æ•°ç»„å’Œå¤‡ç”¨æ•°ç»„
+ * @note   è¿™é‡Œå…ˆå†™åˆ°å?ç”¨ç¼“å­˜æ•°ç»„ç„¶åŽåˆ¤æ–?˜¯å¦è¶…è¿‡ç¼“å­˜æ•°ç»„å¤§å°ï¼Œå‡å?è¶…è¿‡ï¼Œå°±å?”¨åŠ¨æ€æ˜¾ç¤?
+ * @param  strbuf: å­—ç?ä¸²å˜é‡èµ·å§‹åœ°å€
+ * @param  SplitScreen: åˆ†å±æ˜?¦æ˜¾ç¤ºæˆ–è€…æ˜¾ç¤ºå‡ å·åˆ†å±?
  * @retval None
  */
 static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLAY_TYPE SplitScreen)
@@ -473,18 +473,18 @@ static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     unsigned int sizenumber;
     unsigned int size;
     
-    //³õÊ¼»¯
+    //åˆå?åŒ?
     for(i=0;i<ChineseHintAreaGBKBufSize;i++)
     {
-        ChineseHintAreaGBKBuf[i] = 0;   //GBKÂë»º´æÇøÇåÁã
+        ChineseHintAreaGBKBuf[i] = 0;   //GBKç ç¼“å­˜åŒºæ¸…é›¶
     }
 
-    ChineseHintArea_RollDisplay = 0;                //¹ö¶¯ÏÔÊ¾±êÖ¾Î»ÇåÁã
-    ChineseHintAreaGBKLen = 0;                      //ÓÐÐ§GBKÂëÊýÁ¿ÇåÁã
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();          //×ÖÄ£ÄÚÈÝ»º´æÇøÇåÁã
-    Clear_ChineseHintArea_LCDRAM_BackupBuf();      //×ÖÄ£ÄÚÈÝ±¸·Ý»º´æÇøÇåÁã
+    ChineseHintArea_RollDisplay = 0;                //æ»šåŠ¨æ˜¾ç¤ºæ ‡å¿—ä½æ¸…é›?
+    ChineseHintAreaGBKLen = 0;                      //æœ‰æ•ˆGBKç æ•°é‡æ¸…é›?
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();          //å­—æ¨¡å†…å?ç¼“å­˜åŒºæ¸…é›?
+    Clear_ChineseHintArea_LCDRAM_BackupBuf();      //å­—æ¨¡å†…å?å¤‡ä»½ç¼“å­˜åŒºæ¸…é›?
 
-    //ÅÐ¶Ï·ÖÆÁÊÇ·ñÏÔÊ¾
+    //åˆ¤æ–­åˆ†å±æ˜?¦æ˜¾ç¤º
     switch(SplitScreen)
     {
         case NoDisplaySplitScreen :
@@ -536,17 +536,17 @@ static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     }
     if(SplitScreen != NoDisplaySplitScreen)
     {
-        /* ÏÔÊ¾·ÖÆÁ */
+        /* æ˜¾ç¤ºåˆ†å± */
         InputCharacter_to_LCDRAM_Buf(SplitWindowAreaStartseg,SplitWindowAreaStartCom,addresspoint,size,display);
 
-        segendpoint = SplitWindowAreaStartseg;      //È·¶¨ÖÐÎÄÌáÊ¾ÇøÎÄ×ÖÄÚÈÝµÄ½áÊøsegµØÖ·
+        segendpoint = SplitWindowAreaStartseg;      //ç¡?®šä¸?–‡æç¤ºåŒºæ–‡å­—å†…å®¹çš„ç»“æŸsegåœ°å€
     }
     else
     {
-        segendpoint = ChineseHintAreaEndSeg;        //È·¶¨ÖÐÎÄÌáÊ¾ÇøÎÄ×ÖÄÚÈÝµÄ½áÊøsegµØÖ·
+        segendpoint = ChineseHintAreaEndSeg;        //ç¡?®šä¸?–‡æç¤ºåŒºæ–‡å­—å†…å®¹çš„ç»“æŸsegåœ°å€
     }
 
-    //È·¶¨ÖÐÎÄÌáÊ¾ÇøÎÄ×ÖÄÚÈÝ
+    //ç¡?®šä¸?–‡æç¤ºåŒºæ–‡å­—å†…å®?
     #if (MeterType == ThreePhaseMeter)
     sizenumber = Size_6P12P;
     size = Size_12P12P;
@@ -555,67 +555,67 @@ static void Fill_Char_In_ChineseHintArea(unsigned char* strbuf,SPLITSCREENDISPLA
     size = Size_14P14P;
     #endif
 
-    ChineseHintAreaGBKLen = Get_GBKCodeOfStr(strbuf,ChineseHintAreaGBKBuf);    //µÃµ½ÓÐÐ§GBKÂëºÍÊýÁ¿
+    ChineseHintAreaGBKLen = Get_GBKCodeOfStr(strbuf,ChineseHintAreaGBKBuf);    //å¾—åˆ°æœ‰æ•ˆGBKç å’Œæ•°é‡
 
-    if(ChineseHintAreaGBKLen>ChineseHintAreaGBKBufSize) //ÏÈÅÐ¶ÏÓÐÐ§GBKÂëÊýÁ¿£¬Ä¬ÈÏÖ§³ÖChineseHintAreaGBKBufSize¸öGBKÂë£¬Èç¹û³¬¹ý£¬ÓÐ¿ÉÄÜClear_LCDRAM_BackupBuf²»¹»ÓÃ£¬¾ÍÒªÖ±½Ó·µ»Ø£¬²»¼ÌÐøÖ´ÐÐ
+    if(ChineseHintAreaGBKLen>ChineseHintAreaGBKBufSize) //å…ˆåˆ¤æ–?œ‰æ•ˆGBKç æ•°é‡ï¼Œé»˜è?æ”?ŒChineseHintAreaGBKBufSizeä¸ªGBKç ï¼Œå¦‚æžœè¶…è¿‡ï¼Œæœ‰å?ƒ½Clear_LCDRAM_BackupBufä¸å?ç”?¼Œå°±è?ç›´æŽ¥è¿”å›žï¼Œä¸ç»§ç»­æ‰§è?
     {
         return;
     }
-    else            //Ã»ÓÐ³¬¹ý£¬¾Í½«ÄÚÈÝÐ´µ½±¸ÓÃ»º´æÊý×éÖÐ
+    else            //æ²¡æœ‰è¶…è¿‡ï¼Œå°±å°†å†…å®¹å†™åˆ°å?ç”¨ç¼“å­˜æ•°ç»„ä¸­
     {
-        segpoint = 0;       //±¸ÓÃ»º´æÊý×éÊÇ´ÓÆðÊ¼µØÖ·¿ªÊ¼Ð´
+        segpoint = 0;       //å¤‡ç”¨ç¼“å­˜æ•°ç»„æ˜?»Žèµ·å?åœ°å€å¼€å§‹å†™
         
         for(i=0;i<ChineseHintAreaGBKLen;i++)
         {
-            addresspoint = Get_CharBufAddress(ChineseHintAreaGBKBuf[i]);    //µÃµ½×Ö·ûËùÔÚµØÖ·
+            addresspoint = Get_CharBufAddress(ChineseHintAreaGBKBuf[i]);    //å¾—åˆ°å­—ç?æ‰€åœ¨åœ°å€
 
-            if(segpoint>(2*seg))        //³¬¹ý±¸ÓÃ»º´æÇøÊý×é£¬¾Í·µ»Ø
+            if(segpoint>(2*seg))        //è¶…è¿‡å¤‡ç”¨ç¼“å­˜åŒºæ•°ç»„ï¼Œå°±è¿”å›?
             {
                 break;
             }
 
-            if((ChineseHintAreaGBKBuf[i]&0x8080) == 0x8080 )    //ºº×Ö
+            if((ChineseHintAreaGBKBuf[i]&0x8080) == 0x8080 )    //æ±‰å­—
             {
                InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(segpoint,ChineseHintAreaStartCom,addresspoint,size,display);  
                segpoint += size/100;
             }
-            else                                                //×ÖÄ¸ºÍÊý×Ö
+            else                                                //å­—æ¯å’Œæ•°å­?
             {
                InputCharacter_to_ChineseHintArea_LCDRAM_BackupBuf(segpoint,ChineseHintAreaStartCom,addresspoint,sizenumber,display);   
                segpoint += sizenumber/100;    
             }
         }  
 
-        //½«GBKÈ«²¿×ª»¯³É×ÖÄ£ÄÚÈÝºó£¬¾ÍÒªÅÐ¶ÏÈ«²¿ÄÚÈÝÓÐÃ»ÓÐ³¬ÖÐÎÄÌáÊ¾Çø·¶Î§£¬¼ÙÈç³¬ÁË¾ÍÒªÆôÓÃ¹ö¶¯ÏÔÊ¾
+        //å°†GBKå…¨éƒ¨è½?Œ–æˆå­—æ¨¡å†…å®¹åŽï¼Œå°±è¦åˆ¤æ–?…¨éƒ¨å†…å®¹æœ‰æ²¡æœ‰è¶…ä¸­æ–‡æç¤ºåŒºèŒƒå›´ï¼Œå‡å¦‚è¶…äº†å°±è¦å¯ç”¨æ»šåŠ¨æ˜¾ç¤?
         Copy_ChineseHintArea_LCDRAM_BackupBuf_To_LCDRAM_Buf((segendpoint-ChineseHintAreaStartSeg),0);
-        if(segpoint>=segendpoint)  //³¬ÁË
+        if(segpoint>=segendpoint)  //è¶…äº†
         {
-            ChineseHintArea_RollDisplay =1;     //ÆôÓÃ¹ö¶¯ÏÔÊ¾
+            ChineseHintArea_RollDisplay =1;     //å?”¨æ»šåŠ¨æ˜¾ç¤º
         }
     }
 }
 /** 
- * @brief  Ìî³ä¡°µ±Ç°×éºÏÓÐ¹¦×ÜµçÁ¿¡±»òÕß¡°µ±Ç°ÓÐ¹¦×ÜµçÁ¿¡±µ½ÖÐÎÄÌáÊ¾Çø
- * @note   ²»ÏÔÊ¾·ÖÆÁ
+ * @brief  å¡?……â€œå½“å‰ç»„åˆæœ‰åŠŸæ€»ç”µé‡â€æˆ–è€…â€œå½“å‰æœ‰åŠŸæ€»ç”µé‡â€åˆ°ä¸?–‡æç¤ºåŒ?
+ * @note   ä¸æ˜¾ç¤ºåˆ†å±?
  * @retval None
  */
 static void Fill_CurrentCombinedActivePowerEnergyT0(void)
 {
     unsigned char* str;
     #if (MeterType == ThreePhaseMeter)
-    str = "µ±Ç°×éºÏÓÐ¹¦×ÜµçÁ¿";
+    str = "å½“å‰ç»„åˆæœ‰åŠŸæ€»ç”µé‡?";
     #else
-    str = "µ±Ç°ÓÐ¹¦×ÜµçÁ¿";
+    str = "å½“å‰æœ‰åŠŸæ€»ç”µé‡?";
     #endif
     Fill_Char_In_ChineseHintArea(str,NoDisplaySplitScreen);
 }
 
 /** 
- * @brief  Ìî³ä¡°µ±Ç°¡±»òÕß¡°ÉÏxÔÂ¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å¡?……â€œå½“å‰â€æˆ–è€…â€œä¸Šxæœˆâ€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
- * @param  startseg: ÏÔÊ¾µÄÆðÊ¼Î»ÖÃ
- * @param  date: ÈÕÆÚ£¬ÔÝÊ±Ö§³Ö0~12£¬0±íÊ¾µ±Ç°  ÆäËû´ú±íÉÏxÔÂ
- * @retval ·µ»ØµÄÊÇÐ´ÍêºósegËùÔÚÎ»ÖÃ
+ * @param  startseg: æ˜¾ç¤ºçš„èµ·å§‹ä½ç½?
+ * @param  date: æ—¥æœŸï¼Œæš‚æ—¶æ”¯æŒ?0~12ï¼?0è¡¨ç¤ºå½“å‰  å…¶ä»–ä»£è¡¨ä¸Šxæœ?
+ * @retval è¿”å›žçš„æ˜¯å†™å®ŒåŽsegæ‰€åœ¨ä½ç½?
  */
 static unsigned char Fill_CurrentAndLastXMonth_In_ChineseHintArea(unsigned char startseg,unsigned char date)
 {
@@ -633,35 +633,35 @@ static unsigned char Fill_CurrentAndLastXMonth_In_ChineseHintArea(unsigned char 
     #endif
 
     segpoint =  startseg;
-    if(date == 0)           //ÏÔÊ¾µ±Ç°       
+    if(date == 0)           //æ˜¾ç¤ºå½“å‰       
     {
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //µ±
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //å½?
         segpoint += (size/100);
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //Ç°
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //å‰?
         segpoint += (size/100);
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //µ±
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //å½?
         segpoint += (size/100);
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //Ç°
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //å‰?
         segpoint += (size/100);
         #endif
     }
-    else                   //ÏÔÊ¾ÉÏXÔÂ
+    else                   //æ˜¾ç¤ºä¸ŠXæœ?
     {
-        //»ñÈ¡ÔÂ·ÝµÄ¸ßµÍ×Ö½ÚBCDÂë
+        //èŽ·å–æœˆä»½çš„é«˜ä½Žå­—èŠ‚BCDç ?
         high=date/10;
         low=date%10;
        
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[2][0],size,display);   //ÉÏ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[2][0],size,display);   //ä¸?
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[2][0],size,display);   //ÉÏ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[2][0],size,display);   //ä¸?
         #endif
         segpoint += (size/100);
 
-        //ÏÔÊ¾XX
-        if(high != 0)       //¸ßÎ»²»Îª0£¬¾ÍÐèÒªÏÔÊ¾
+        //æ˜¾ç¤ºXX
+        if(high != 0)       //é«˜ä½ä¸ä¸º0ï¼Œå°±éœ€è¦æ˜¾ç¤?
         {           
             #if (MeterType == ThreePhaseMeter)
             InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_6p12p[high][0],sizenumber,display);   //x
@@ -679,9 +679,9 @@ static unsigned char Fill_CurrentAndLastXMonth_In_ChineseHintArea(unsigned char 
         segpoint += (sizenumber/100);
 
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[3][0],size,display);   //ÔÂ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[3][0],size,display);   //æœ?
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[3][0],size,display);   //ÔÂ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[3][0],size,display);   //æœ?
         #endif
         segpoint += (size/100);
     }
@@ -690,11 +690,11 @@ static unsigned char Fill_CurrentAndLastXMonth_In_ChineseHintArea(unsigned char 
 }
 
 /** 
- * @brief  Ìî³ä¡°AÏà¡±¡°BÏà¡±¡°CÏà¡±µ½ÖÐÎÄÌáÊ¾Çø
- * @note   ºÏÏà²»ÏÔÊ¾
- * @param  startseg: ÏÔÊ¾µÄÆðÊ¼Î»ÖÃ
- * @param  phase: ÏàÎ»ÀàÐÍ£¬¾ßÌå²Î¼ûPHASE_TYPEÃ¶¾Ù
- * @retval ·µ»ØµÄÊÇÐ´ÍêºósegËùÔÚÎ»ÖÃ
+ * @brief  å¡?……â€œAç›¸â€â€œBç›¸â€â€œCç›¸â€åˆ°ä¸?–‡æç¤ºåŒ?
+ * @note   åˆç›¸ä¸æ˜¾ç¤?
+ * @param  startseg: æ˜¾ç¤ºçš„èµ·å§‹ä½ç½?
+ * @param  phase: ç›¸ä½ç±»åž‹ï¼Œå…·ä½“å‚è§PHASE_TYPEæžšä¸¾
+ * @retval è¿”å›žçš„æ˜¯å†™å®ŒåŽsegæ‰€åœ¨ä½ç½?
  */
 static unsigned char Fill_Phase_In_ChineseHintArea(unsigned char startseg,PHASE_TYPE phase)
 {
@@ -726,7 +726,7 @@ static unsigned char Fill_Phase_In_ChineseHintArea(unsigned char startseg,PHASE_
     }
     if(phase != TotalPhase)
     {
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[52][0],size,display);   //Ïà
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[52][0],size,display);   //ç›?
         segpoint += (size/100);
     }
     #endif
@@ -734,11 +734,11 @@ static unsigned char Fill_Phase_In_ChineseHintArea(unsigned char startseg,PHASE_
     return segpoint;
 }
 /** 
- * @brief  Ìî³ä¡°×éºÏÓÐ¹¦¡±¡°ÕýÏòÓÐ¹¦¡±¡°·´ÏòÓÐ¹¦¡±¡°ÎÞ¹¦×éºÏ1¡±¡°ÎÞ¹¦×éºÏ2¡±¡°ÕýÏòÎÞ¹¦¡±¡°·´ÏòÎÞ¹¦¡±¡°ÎÞ¹¦¢ñ¡±¡°ÎÞ¹¦¢ò¡±¡°ÎÞ¹¦¢ó¡±¡°ÎÞ¹¦¢ô¡±¡°ÕýÏòÊÓÔÚ¡±¡°·´ÏòÊÓÔÚ¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å¡?……â€œç»„åˆæœ‰åŠŸâ€â€œæ?å‘æœ‰åŠŸâ€â€œåå‘æœ‰åŠŸâ€â€œæ— åŠŸç»„å?1â€â€œæ— åŠŸç»„å?2â€â€œæ?å‘æ— åŠŸâ€â€œåå‘æ— åŠŸâ€â€œæ— åŠŸâ… â€â€œæ— åŠŸâ…¡â€â€œæ— åŠŸâ…¢â€â€œæ— åŠŸâ…£â€â€œæ?å‘è?åœ¨â€â€œåå‘è?åœ¨â€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
- * @param  startseg: ×Ö·ûÏÔÊ¾ÆðÊ¼Î»ÖÃ
- * @param  engerytype: µçÁ¿ÖÖÀà£¬¾ßÌå²Î¼ûENERGY_TYPEÃ¶¾Ù
- * @retval ·µ»ØµÄÊÇÐ´ÍêºósegËùÔÚÎ»ÖÃ
+ * @param  startseg: å­—ç?æ˜¾ç¤ºèµ·å?ä½ç½®
+ * @param  engerytype: ç”µé‡ç§ç±»ï¼Œå…·ä½“å‚è§ENERGY_TYPEæžšä¸¾
+ * @retval è¿”å›žçš„æ˜¯å†™å®ŒåŽsegæ‰€åœ¨ä½ç½?
  */
 static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,ENERGY_TYPE engerytype)
 {
@@ -757,63 +757,63 @@ static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,E
 
     segpoint =  startseg;
 
-    if((engerytype == CombinedActivePowerEnergy)||(engerytype == PositiveActivePowerEnergy)||(engerytype == ReverseActivePowerEnergy))     //ÓÐ¹¦Àà
+    if((engerytype == CombinedActivePowerEnergy)||(engerytype == PositiveActivePowerEnergy)||(engerytype == ReverseActivePowerEnergy))     //æœ‰åŠŸç±?
     {
 
-        if(engerytype == PositiveActivePowerEnergy)      //ÕýÏòÓÐ¹¦Àà
+        if(engerytype == PositiveActivePowerEnergy)      //æ­£å‘æœ‰åŠŸç±?
         {           
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display);   //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display);   //æ­?
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display);   //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display);   //æ­?
             #endif
             segpoint += (size/100);             
         }
-        else if(engerytype == ReverseActivePowerEnergy) //·´ÏòÓÐ¹¦Àà   
+        else if(engerytype == ReverseActivePowerEnergy) //åå‘æœ‰åŠŸç±?   
         {  
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display);   //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display);   //å?
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display);   //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display);   //å?
             #endif
             segpoint += (size/100);             
         }
         
-        if(engerytype != CombinedActivePowerEnergy) //²»ÊÇ×éºÏ£¬¾ÍÏÔÊ¾¡°Ïò¡±
+        if(engerytype != CombinedActivePowerEnergy) //ä¸æ˜¯ç»„åˆï¼Œå°±æ˜¾ç¤ºâ€œå‘â€?
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display);   //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display);   //å?
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display);     //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display);     //å?
             #endif
             segpoint += (size/100);  
         }
 
-        #if (MeterType == ThreePhaseMeter)          //µ¥Ïà±í²»ÐèÒªÏÔÊ¾ÓÐ¹¦
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[37][0],size,display); //ÓÐ
+        #if (MeterType == ThreePhaseMeter)          //å•ç›¸è¡¨ä¸éœ€è¦æ˜¾ç¤ºæœ‰åŠ?
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[37][0],size,display); //æœ?
         segpoint += (size/100); 
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[38][0],size,display);//¹¦
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[38][0],size,display);//åŠ?
         segpoint += (size/100);   
         #endif   
     }
     else if((engerytype == CombinedOneReactivePowerEnergy)||(engerytype == CombinedTwoReactivePowerEnergy)\
           ||(engerytype == PositiveReactivePowerEnergy)||(engerytype == ReverseReactivePowerEnergy)\
           ||(engerytype == FirstQuadrantReactivePowerEnergy)||(engerytype == SecondQuadrantReactivePowerEnergy)\
-          ||(engerytype == ThirdQuadrantReactivePowerEnergy)||(engerytype == FourthQuadrantReactivePowerEnergy))     //ÎÞ¹¦Àà
+          ||(engerytype == ThirdQuadrantReactivePowerEnergy)||(engerytype == FourthQuadrantReactivePowerEnergy))     //æ— åŠŸç±?
     {
         combinedreactivepowerenergy = 0;
 
-        if((engerytype == CombinedOneReactivePowerEnergy)||(engerytype == CombinedTwoReactivePowerEnergy))      //×éºÏÎÞ¹¦Àà
+        if((engerytype == CombinedOneReactivePowerEnergy)||(engerytype == CombinedTwoReactivePowerEnergy))      //ç»„åˆæ— åŠŸç±?
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[4][0],size,display); //×é
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[4][0],size,display); //ç»?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[5][0],size,display); //ºÏ
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[5][0],size,display); //å?
             segpoint += (size/100); 
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[4][0],size,display); //×é
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[4][0],size,display); //ç»?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[5][0],size,display); //ºÏ
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[5][0],size,display); //å?
             segpoint += (size/100); 
             #endif
 
@@ -826,191 +826,191 @@ static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,E
                combinedreactivepowerenergy = 2; 
             }      
         }
-        else if(engerytype == PositiveReactivePowerEnergy) //ÕýÏòÎÞ¹¦Àà
+        else if(engerytype == PositiveReactivePowerEnergy) //æ­£å‘æ— åŠŸç±?
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display); //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display); //æ­?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display); //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display); //å?
             segpoint += (size/100); 
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display); //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display); //æ­?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display); //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display); //å?
             segpoint += (size/100); 
             #endif
 
         }
-        else if(engerytype == ReverseReactivePowerEnergy) //·´ÏòÎÞ¹¦Àà
+        else if(engerytype == ReverseReactivePowerEnergy) //åå‘æ— åŠŸç±?
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display); //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display); //å?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display); //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display); //å?
             segpoint += (size/100); 
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display); //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display); //å?
             segpoint += (size/100); 
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display); //Ïò
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display); //å?
             segpoint += (size/100); 
             #endif            
 
         }  
         else if((engerytype == FirstQuadrantReactivePowerEnergy)||(engerytype == SecondQuadrantReactivePowerEnergy)\
-              ||(engerytype == ThirdQuadrantReactivePowerEnergy)||(engerytype == FourthQuadrantReactivePowerEnergy)) //ÏóÏÞÎÞ¹¦Àà  
+              ||(engerytype == ThirdQuadrantReactivePowerEnergy)||(engerytype == FourthQuadrantReactivePowerEnergy)) //è±¡é™æ— åŠŸç±?  
         {
-            if(engerytype == FirstQuadrantReactivePowerEnergy)  //µÚÒ»ÏóÏÞ
+            if(engerytype == FirstQuadrantReactivePowerEnergy)  //ç¬?¸€è±¡é™
             {
 
                 /*
-                //ÏÔÊ¾¡°I¡±
+                //æ˜¾ç¤ºâ€œIâ€?
                 #ifdef ThreePhase
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[44][0],size,display); //¢ñ(44)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[44][0],size,display); //â…?(44)
                 segpoint += (size/100); 
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[44][0],size,display); //¢ñ(44)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[44][0],size,display); //â…?(44)
                 segpoint += (size/100);     
                 #endif   
                 */
-                //ÏÔÊ¾¡°µÚ1ÏóÏÞ¡±
+                //æ˜¾ç¤ºâ€œç?1è±¡é™â€?
                 #if (MeterType == ThreePhaseMeter)
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[53][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[53][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_6p12p[1][0],sizenumber,display); //1
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //é™?(55) 
                 segpoint += (size/100);                   
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[53][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[53][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_7p14p[1][0],sizenumber,display); //1
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //é™?(55) 
                 segpoint += (size/100);      
                 #endif                  
 
             }
-            else if(engerytype == SecondQuadrantReactivePowerEnergy)  //µÚ¶þÏóÏÞ
+            else if(engerytype == SecondQuadrantReactivePowerEnergy)  //ç¬?ºŒè±¡é™
             {
                 /*
-                //ÏÔÊ¾¡°¢ò¡±
+                //æ˜¾ç¤ºâ€œâ…¡â€?
                 #ifdef ThreePhase
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[45][0],size,display); //¢ò(45)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[45][0],size,display); //â…?(45)
                 segpoint += (size/100); 
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[45][0],size,display); //¢ò(45)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[45][0],size,display); //â…?(45)
                 segpoint += (size/100);     
                 #endif   
                 */
-                //ÏÔÊ¾¡°µÚ2ÏóÏÞ¡±
+                //æ˜¾ç¤ºâ€œç?2è±¡é™â€?
                 #if (MeterType == ThreePhaseMeter)
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_6p12p[2][0],sizenumber,display);     //2
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);                   
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_7p14p[2][0],sizenumber,display); //2
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);      
                 #endif 
             }
-            else if(engerytype == ThirdQuadrantReactivePowerEnergy)  //µÚÈýÏóÏÞ
+            else if(engerytype == ThirdQuadrantReactivePowerEnergy)  //ç¬?¸‰è±¡é™
             {
                 /*
-                //ÏÔÊ¾¡°¢ó¡±
+                //æ˜¾ç¤ºâ€œâ…¢â€?
                 #ifdef ThreePhase
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Chinese_12p12p[46][0],size,display); //¢ó(46)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Chinese_12p12p[46][0],size,display); //â…?(46)
                 segpoint += (size/100); 
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[46][0],size,display); //¢ó(46)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[46][0],size,display); //â…?(46)
                 segpoint += (size/100);     
                 #endif 
                 */
-                //ÏÔÊ¾¡°µÚ3ÏóÏÞ¡±
+                //æ˜¾ç¤ºâ€œç?3è±¡é™â€?
                 #if (MeterType == ThreePhaseMeter)
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_6p12p[3][0],sizenumber,display); //3
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);                   
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_7p14p[3][0],sizenumber,display); //3
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);      
                 #endif                
 
             }
-            else if(engerytype == FourthQuadrantReactivePowerEnergy)  //µÚËÄÏóÏÞ
+            else if(engerytype == FourthQuadrantReactivePowerEnergy)  //ç¬?››è±¡é™
             {
                 /*
-                //ÏÔÊ¾¡°¢ô¡±
+                //æ˜¾ç¤ºâ€œâ…£â€?
                 #ifdef ThreePhase
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Chinese_12p12p[47][0],size,display); //¢ô(47)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Chinese_12p12p[47][0],size,display); //â…?(47)
                 segpoint += (size/100); 
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[47][0],size,display); //¢ô(47)
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[47][0],size,display); //â…?(47)
                 segpoint += (size/100);     
                 #endif  
                 */
                
-                //ÏÔÊ¾¡°µÚ4ÏóÏÞ¡±
+                //æ˜¾ç¤ºâ€œç?4è±¡é™â€?
                 #if (MeterType == ThreePhaseMeter)
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_6p12p[4][0],sizenumber,display); //4
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);                   
                 #else
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //µÚ(53) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[54][0],size,display);      //ç¬?(53) 
                 segpoint += (size/100); 
                 InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_7p14p[4][0],sizenumber,display); //4
                 segpoint += (sizenumber/100); 
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //Ïó(54) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[55][0],size,display);      //è±?(54) 
                 segpoint += (size/100);                
-                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //ÏÞ(55) 
+                InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[56][0],size,display);      //é™?(55) 
                 segpoint += (size/100);      
                 #endif                 
             }
         } 
         
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[36][0],size,display); //ÎÞ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[36][0],size,display); //æ—?
         segpoint += (size/100); 
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[38][0],size,display);  //¹¦
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[38][0],size,display);  //åŠ?
         segpoint += (size/100); 
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[36][0],size,display); //ÎÞ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[36][0],size,display); //æ—?
         segpoint += (size/100); 
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[38][0],size,display);  //¹¦
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[38][0],size,display);  //åŠ?
         segpoint += (size/100);   
         #endif  
 
 
-        //ÏÔÊ¾×éºÏÎÞ¹¦1»òÕßÎÞ¹¦2ÖÐµÄÊý×Ö
+        //æ˜¾ç¤ºç»„åˆæ— åŠŸ1æˆ–è€…æ— åŠ?2ä¸?š„æ•°å­—
         if(combinedreactivepowerenergy == 1)        
         {
             #if (MeterType == ThreePhaseMeter)
@@ -1033,43 +1033,43 @@ static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,E
             #endif  
         }
     }
-    else if((engerytype == PositiveApparentEnergy)||(engerytype == ReverseApparentEnergy))      //ÊÓÔÚÀà
+    else if((engerytype == PositiveApparentEnergy)||(engerytype == ReverseApparentEnergy))      //è§†åœ¨ç±?
     {
-        if(engerytype == PositiveApparentEnergy)        //ÕýÏòÊÓÔÚ
+        if(engerytype == PositiveApparentEnergy)        //æ­£å‘è§†åœ¨
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display);   //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[6][0],size,display);   //æ­?
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display);   //Õý
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[6][0],size,display);   //æ­?
             #endif
             segpoint += (size/100); 
         }
-        else                                            //·´ÏòÊÓÔÚ
+        else                                            //åå‘è§†åœ¨
         {
             #if (MeterType == ThreePhaseMeter)
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display);   //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[7][0],size,display);   //å?
             #else
-            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display);   //·´
+            InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[7][0],size,display);   //å?
             #endif
             segpoint += (size/100); 
         }
 
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display);   //Ïò
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[8][0],size,display);   //å?
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display);   //Ïò
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[8][0],size,display);   //å?
         #endif
         segpoint += (size/100); 
         
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[50][0],size,display);   //ÊÓ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[50][0],size,display);   //è§?
         segpoint += (size/100);  
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[51][0],size,display);   //ÔÚ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[51][0],size,display);   //åœ?
         segpoint += (size/100);  
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[50][0],size,display);         //ÊÓ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[50][0],size,display);         //è§?
         segpoint += (size/100);  
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[51][0],size,display);        //ÔÚ
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[51][0],size,display);        //åœ?
         segpoint += (size/100);  
         #endif 
     }   
@@ -1077,11 +1077,11 @@ static unsigned char Fill_EngeryType_In_ChineseHintArea(unsigned char startseg,E
 }
 
 /** 
- * @brief  Ìî³ä"×ÜµçÁ¿"»òÕß¡°TxµçÁ¿¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å¡?……"æ€»ç”µé‡?"æˆ–è€…â€œTxç”µé‡â€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
- * @param  startseg: ×Ö·ûÏÔÊ¾ÆðÊ¼Î»ÖÃ
- * @param  rate: ·ÑÂÊ 0~12£¬ÆäÖÐ0´ú±í×Ü£¬ÆäËû´ú±íTx
- * @retval ·µ»ØµÄÊÇÐ´ÍêºósegËùÔÚÎ»ÖÃ
+ * @param  startseg: å­—ç?æ˜¾ç¤ºèµ·å?ä½ç½®
+ * @param  rate: è´¹çŽ‡ 0~12ï¼Œå…¶ä¸?0ä»£è¡¨æ€»ï¼Œå…¶ä»–ä»£è¡¨Tx
+ * @retval è¿”å›žçš„æ˜¯å†™å®ŒåŽsegæ‰€åœ¨ä½ç½?
  */
 static unsigned char Fill_EngeryRate_In_ChineseHintArea(unsigned char startseg,unsigned char rate)
 {
@@ -1099,9 +1099,9 @@ static unsigned char Fill_EngeryRate_In_ChineseHintArea(unsigned char startseg,u
     #endif
     segpoint =  startseg;
     
-    if(rate)        //·ÑÂÊµçÁ¿
+    if(rate)        //è´¹çŽ‡ç”µé‡
     {
-        //»ñÈ¡·ÑÂÊµÄ¸ßµÍ×Ö½ÚBCDÂë
+        //èŽ·å–è´¹çŽ‡çš„é«˜ä½Žå­—èŠ‚BCDç ?
         high=rate/10;
         low=rate%10; 
 
@@ -1133,41 +1133,41 @@ static unsigned char Fill_EngeryRate_In_ChineseHintArea(unsigned char startseg,u
         #endif  
 
     }
-    else             //×ÜµçÁ¿
+    else             //æ€»ç”µé‡?
     {
 
         #if (MeterType == ThreePhaseMeter)
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[9][0],size,display); //×Ü
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[9][0],size,display); //æ€?
         segpoint += (size/100); 
 
         #else
-        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[9][0],size,display); //×Ü
+        InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[9][0],size,display); //æ€?
         segpoint += (size/100); 
         #endif 
 
     }    
 
     #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display); //µç
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display); //ç”?
     segpoint += (size/100); 
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[24][0],size,display); //Á¿
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[24][0],size,display); //é‡?
     segpoint += (size/100); 
     #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[23][0],size,display); //µç
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[23][0],size,display); //ç”?
     segpoint += (size/100); 
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[24][0],size,display); //Á¿
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[24][0],size,display); //é‡?
     segpoint += (size/100); 
     #endif 
 
     return segpoint;
 }
 /** 
- * @brief  ¸ù¾ÝµçÁ¿ÖÖÀàºÍ·ÑÂÊÅÐ¶ÏÒªÌî³äµÄÖÐÎÄÌáÊ¾ÄÚÈÝ
+ * @brief  æ ¹æ®ç”µé‡ç§ç±»å’Œè´¹çŽ‡åˆ¤æ–??å¡?……çš„ä¸­æ–‡æç¤ºå†…å®?
  * @note   
- * @param  phase: ÏàÎ»£¬¾ßÌå²Î¼ûPHASE_TYPEÃ¶¾Ù
- * @param  engerytype: µçÁ¿ÖÖÀà£¬¾ßÌå²Î¼ûENERGY_TYPEÃ¶¾Ù
- * @param  date: ÈÕÆÚ£¬ÔÝÊ±Ö§³Ö0~12£¬0±íÊ¾µ±Ç°  ÆäËû´ú±íÉÏxÔÂ
- * @param  rate: ·ÑÂÊ 0~12£¬ÆäÖÐ0´ú±í×Ü£¬ÆäËû´ú±íTx
+ * @param  phase: ç›¸ä½ï¼Œå…·ä½“å‚è§PHASE_TYPEæžšä¸¾
+ * @param  engerytype: ç”µé‡ç§ç±»ï¼Œå…·ä½“å‚è§ENERGY_TYPEæžšä¸¾
+ * @param  date: æ—¥æœŸï¼Œæš‚æ—¶æ”¯æŒ?0~12ï¼?0è¡¨ç¤ºå½“å‰  å…¶ä»–ä»£è¡¨ä¸Šxæœ?
+ * @param  rate: è´¹çŽ‡ 0~12ï¼Œå…¶ä¸?0ä»£è¡¨æ€»ï¼Œå…¶ä»–ä»£è¡¨Tx
  * @retval None
  */
 static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engerytype,unsigned char date,unsigned char rate)
@@ -1176,108 +1176,108 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
     unsigned char segpoint;
     char* str;
     int len;
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();      //Çå¿ÕLCDRAM_BufÖÐµÄÖÐÎÄÌáÊ¾Çø
-    Clear_ChineseHintArea_LCDRAM_BackupBuf();   //ÇåÁãÖÐÎÄÌáÊ¾ÇøµÄ±¸ÓÃÊý×é
-    ChineseHintAreaGBKStruct_Init();            //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éºÍÓÐÐ§GBKÂëÊýÁ¿ÇåÁã
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();      //æ¸…ç©ºLCDRAM_Bufä¸?š„ä¸?–‡æç¤ºåŒ?
+    Clear_ChineseHintArea_LCDRAM_BackupBuf();   //æ¸…é›¶ä¸?–‡æç¤ºåŒºçš„å¤‡ç”¨æ•°ç»„
+    ChineseHintAreaGBKStruct_Init();            //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„å’Œæœ‰æ•ˆGBKç æ•°é‡æ¸…é›?
     len = 0;
-    //Ê±¼ä
+    //æ—¶é—´
     switch(date)
     {
         case 0:
-            str = "µ±Ç°";
+            str = "å½“å‰";
         break;
         case 1:
-            str = "ÉÏ1ÔÂ";
+            str = "ä¸?1æœ?";
         break;
         case 2:
-            str = "ÉÏ2ÔÂ";
+            str = "ä¸?2æœ?";
         break;
         case 3:
-            str = "ÉÏ3ÔÂ";
+            str = "ä¸?3æœ?";
         break;
         case 4:
-            str = "ÉÏ4ÔÂ";
+            str = "ä¸?4æœ?";
         break;
         case 5:
-            str = "ÉÏ5ÔÂ";
+            str = "ä¸?5æœ?";
         break;
         case 6:
-            str = "ÉÏ6ÔÂ";
+            str = "ä¸?6æœ?";
         break;
         case 7:
-            str = "ÉÏ7ÔÂ";
+            str = "ä¸?7æœ?";
         break;
         case 8:
-            str = "ÉÏ8ÔÂ";
+            str = "ä¸?8æœ?";
         break;
         case 9:
-            str = "ÉÏ9ÔÂ";
+            str = "ä¸?9æœ?";
         break;
         case 10:
-            str = "ÉÏ10ÔÂ";
+            str = "ä¸?10æœ?";
         break;
         case 11:
-            str = "ÉÏ11ÔÂ";
+            str = "ä¸?11æœ?";
         break;
         case 12:
-            str = "ÉÏ12ÔÂ";
+            str = "ä¸?12æœ?";
         break;
         case 13:
-            str = "ÉÏ13ÔÂ";
+            str = "ä¸?13æœ?";
         break;
         case 14:
-            str = "ÉÏ14ÔÂ";
+            str = "ä¸?14æœ?";
         break;
         case 15:
-            str = "ÉÏ15ÔÂ";
+            str = "ä¸?15æœ?";
         break;
         case 16:
-            str = "ÉÏ16ÔÂ";
+            str = "ä¸?16æœ?";
         break;
         case 17:
-            str = "ÉÏ17ÔÂ";
+            str = "ä¸?17æœ?";
         break;
         case 18:
-            str = "ÉÏ18ÔÂ";
+            str = "ä¸?18æœ?";
         break;
         case 19:
-            str = "ÉÏ19ÔÂ";
+            str = "ä¸?19æœ?";
         break;
         case 20:
-            str = "ÉÏ20ÔÂ";
+            str = "ä¸?20æœ?";
         break;
         case 21:
-            str = "ÉÏ21ÔÂ";
+            str = "ä¸?21æœ?";
         break;
         case 22:
-            str = "ÉÏ22ÔÂ";
+            str = "ä¸?22æœ?";
         break;
         case 23:
-            str = "ÉÏ23ÔÂ";
+            str = "ä¸?23æœ?";
         break;
         case 24:
-            str = "ÉÏ24ÔÂ";
+            str = "ä¸?24æœ?";
         break;
         default:
             str = "0";
         break;
     }
     
-    Write_Str_ChineseHintAreaGBKStruct(0,str);          //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éÆðÊ¼µØÖ·´æ´¢str×Ö·û´®µÄgbkÂë
-    len += strlen(str);                                 //È·¶¨×Ö·û´®³¤¶È
-    //ÏàÎ»
+    Write_Str_ChineseHintAreaGBKStruct(0,str);          //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„èµ·å§‹åœ°å€å­˜å‚¨strå­—ç?ä¸²çš„gbkç ?
+    len += strlen(str);                                 //ç¡?®šå­—ç?ä¸²é•¿åº?
+    //ç›¸ä½
     switch(phase)
     {   
         case APhase:
-            str = "AÏà";
+            str = "Aç›?";
         break;
         
         case BPhase:
-            str = "BÏà";
+            str = "Bç›?";
         break;
         
         case CPhase:
-            str = "CÏà";
+            str = "Cç›?";
         break;
 
         default:
@@ -1286,68 +1286,68 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
     }
     if(phase != TotalPhase)
     {
-        Write_Str_ChineseHintAreaGBKStruct(len,str);      //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éÆðÊ¼µØÖ·´æ´¢str×Ö·û´®µÄgbkÂë
-        len += strlen(str);                               //È·¶¨×Ö·û´®³¤¶È        
+        Write_Str_ChineseHintAreaGBKStruct(len,str);      //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„èµ·å§‹åœ°å€å­˜å‚¨strå­—ç?ä¸²çš„gbkç ?
+        len += strlen(str);                               //ç¡?®šå­—ç?ä¸²é•¿åº?        
     }
 
-    //µçÁ¿ÖÖÀà
+    //ç”µé‡ç§ç±»
     switch(engerytype)
     {
         case CombinedActivePowerEnergy:
             #if (MeterType == ThreePhaseMeter)
-            str = "×éºÏÓÐ¹¦";
+            str = "ç»„åˆæœ‰åŠŸ";
             #else
-            str = "ÓÐ¹¦";
+            str = "æœ‰åŠŸ";
             #endif
         break;
         case PositiveActivePowerEnergy:
-            str = "ÕýÏòÓÐ¹¦";
+            str = "æ­£å‘æœ‰åŠŸ";
         break;
         case ReverseActivePowerEnergy:
-            str = "·´ÏòÓÐ¹¦";
+            str = "åå‘æœ‰åŠŸ";
         break;
         case CombinedOneReactivePowerEnergy:
-            str = "×éºÏÎÞ¹¦1";
+            str = "ç»„åˆæ— åŠŸ1";
         break;
         case CombinedTwoReactivePowerEnergy:
-            str = "×éºÏÎÞ¹¦2";
+            str = "ç»„åˆæ— åŠŸ2";
         break;
         case PositiveReactivePowerEnergy:
-            str = "ÕýÏòÎÞ¹¦";
+            str = "æ­£å‘æ— åŠŸ";
         break;
         case ReverseReactivePowerEnergy:
-            str = "·´ÏòÎÞ¹¦";
+            str = "åå‘æ— åŠŸ";
         break;
         case FirstQuadrantReactivePowerEnergy:
-            str = "µÚ1ÏóÏÞÎÞ¹¦";
+            str = "ç¬?1è±¡é™æ— åŠŸ";
         break;
         case SecondQuadrantReactivePowerEnergy:
-            str = "µÚ2ÏóÏÞÎÞ¹¦";
+            str = "ç¬?2è±¡é™æ— åŠŸ";
         break;
         case ThirdQuadrantReactivePowerEnergy:
-            str = "µÚ3ÏóÏÞÎÞ¹¦";
+            str = "ç¬?3è±¡é™æ— åŠŸ";
         break;
         case FourthQuadrantReactivePowerEnergy:
-            str = "µÚ4ÏóÏÞÎÞ¹¦";
+            str = "ç¬?4è±¡é™æ— åŠŸ";
         break;
         case PositiveApparentEnergy:
-            str = "ÕýÏòÊÓÔÚ";
+            str = "æ­£å‘è§†åœ¨";
         break;
         case ReverseApparentEnergy:
-            str = "·´ÏòÊÓÔÚ";
+            str = "åå‘è§†åœ¨";
         break;
         default:
             str = "0"
         break;
     }
-    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éÆðÊ¼µØÖ·´æ´¢str×Ö·û´®µÄgbkÂë
-    len += strlen(str);                                 //È·¶¨×Ö·û´®³¤¶È    
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„èµ·å§‹åœ°å€å­˜å‚¨strå­—ç?ä¸²çš„gbkç ?
+    len += strlen(str);                                 //ç¡?®šå­—ç?ä¸²é•¿åº?    
     
-    //·ÑÂÊ
+    //è´¹çŽ‡
     switch(date)
     {
         case 0:
-            str = "×Ü";
+            str = "æ€?";
         break;
         case 1:
             str = "T1";
@@ -1396,17 +1396,16 @@ static void Fill_Engery_In_ChineseHintArea(PHASE_TYPE phase,ENERGY_TYPE engeryty
         break;
     }
 
-    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éÆðÊ¼µØÖ·´æ´¢str×Ö·û´®µÄgbkÂë
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„èµ·å§‹åœ°å€å­˜å‚¨strå­—ç?ä¸²çš„gbkç ?
     len += strlen(str);  
 
-    str = "µçÁ¿"
-    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ÖÐÎÄÌáÊ¾ÇøµÄGBKÂë»º´æÊý×éÆðÊ¼µØÖ·´æ´¢str×Ö·û´®µÄgbkÂë
+    str = "ç”µé‡"
+    Write_Str_ChineseHintAreaGBKStruct(len,str);        //ä¸?–‡æç¤ºåŒºçš„GBKç ç¼“å­˜æ•°ç»„èµ·å§‹åœ°å€å­˜å‚¨strå­—ç?ä¸²çš„gbkç ?
     len += strlen(str);  
-
 
 }
 /** 
- * @brief  Ìî³ä¡°µ±Ç°ÈÕÆÚ¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å¡?……â€œå½“å‰æ—¥æœŸâ€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
  * @retval None
  */
@@ -1416,7 +1415,7 @@ static void Fill_CurrentDate_In_ChineseHintArea(void)
 
     unsigned char segpoint;
     
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //Çå¿ÕLCDRAM_BufÖÐµÄÖÐÎÄÌáÊ¾Çø
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //æ¸…ç©ºLCDRAM_Bufä¸?š„ä¸?–‡æç¤ºåŒ?
    
     #if (MeterType == ThreePhaseMeter)
     size = Size_12P12P;
@@ -1427,28 +1426,28 @@ static void Fill_CurrentDate_In_ChineseHintArea(void)
     segpoint = ChineseHintAreaStartSeg;     
 
     #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[48][0],size,display);   //ÈÕ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[48][0],size,display);   //æ—?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[49][0],size,display);   //ÆÚ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[49][0],size,display);   //æœ?
     segpoint += (size/100);    
     #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[48][0],size,display);   //ÈÕ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[48][0],size,display);   //æ—?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[49][0],size,display);   //ÆÚ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[49][0],size,display);   //æœ?
     segpoint += (size/100);
     #endif
 }
 
 /** 
- * @brief  Ìî³ä¡°µ±Ç°Ê±¼ä¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å¡?……â€œå½“å‰æ—¶é—´â€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
  * @retval None
  */
@@ -1457,7 +1456,7 @@ static void Fill_CurrentTime_In_ChineseHintArea(void)
     unsigned int size;
     unsigned char segpoint;
     
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //Çå¿ÕLCDRAM_BufÖÐµÄÖÐÎÄÌáÊ¾Çø
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //æ¸…ç©ºLCDRAM_Bufä¸?š„ä¸?–‡æç¤ºåŒ?
    
     #if (MeterType == ThreePhaseMeter)
     size = Size_12P12P;
@@ -1468,28 +1467,28 @@ static void Fill_CurrentTime_In_ChineseHintArea(void)
     segpoint = ChineseHintAreaStartSeg;     
 
     #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[27][0],size,display);   //Ê±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[27][0],size,display);   //æ—?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[28][0],size,display);   //¼ä
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[28][0],size,display);   //é—?
     segpoint += (size/100);    
     #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[27][0],size,display);   //Ê±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[27][0],size,display);   //æ—?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[28][0],size,display);   //¼ä
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[28][0],size,display);   //é—?
     segpoint += (size/100);
     #endif    
 }
 
 /** 
- * @brief  ¼ÙÈçÊÇÈýÏàÌî³ä¡°µ±Ç°Ê£Óàµç·Ñ¡±µ½ÖÐÎÄÌáÊ¾Çø£¬¼ÙÈçÊÇµ¥ÏàÌî³ä¡°µ±Ç°Ê£Óà½ð¶î¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å‡å?æ˜?¸‰ç›¸å¡«å……â€œå½“å‰å‰©ä½™ç”µè´¹â€åˆ°ä¸?–‡æç¤ºåŒºï¼Œå‡å?æ˜?•ç›¸å¡«å……â€œå½“å‰å‰©ä½™é‡‘é¢â€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
  * @retval None
  */
@@ -1499,7 +1498,7 @@ static void Fill_RemainingAmount_In_ChineseHintArea(void)
     unsigned char segpoint;
 
     
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //Çå¿ÕLCDRAM_BufÖÐµÄÖÐÎÄÌáÊ¾Çø
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //æ¸…ç©ºLCDRAM_Bufä¸?š„ä¸?–‡æç¤ºåŒ?
    
     #if (MeterType == ThreePhaseMeter)
     size = Size_12P12P;
@@ -1510,36 +1509,36 @@ static void Fill_RemainingAmount_In_ChineseHintArea(void)
     segpoint = ChineseHintAreaStartSeg;     
 
     #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[14][0],size,display);  //Ê£
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[14][0],size,display);  //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[15][0],size,display);  //Óà
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[15][0],size,display);  //ä½?
     segpoint += (size/100);   
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display);  //µç
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display);  //ç”?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[34][0],size,display);  //·Ñ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[34][0],size,display);  //è´?
     segpoint += (size/100);  
     #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[14][0],size,display);  //Ê£
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[14][0],size,display);  //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[15][0],size,display);  //Óà
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[15][0],size,display);  //ä½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[30][0],size,display);  //½ð
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[30][0],size,display);  //é‡?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[31][0],size,display);  //¶î
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[31][0],size,display);  //é¢?
     segpoint += (size/100);
     #endif    
 }
 
 /** 
- * @brief  ¼ÙÈçÊÇÈýÏàÌî³ä¡°µ±Ç°Í¸Ö§µç·Ñ¡±µ½ÖÐÎÄÌáÊ¾Çø£¬¼ÙÈçÊÇµ¥ÏàÌî³ä¡°µ±Ç°Í¸Ö§½ð¶î¡±µ½ÖÐÎÄÌáÊ¾Çø
+ * @brief  å‡å?æ˜?¸‰ç›¸å¡«å……â€œå½“å‰é€æ”¯ç”µè´¹â€åˆ°ä¸?–‡æç¤ºåŒºï¼Œå‡å?æ˜?•ç›¸å¡«å……â€œå½“å‰é€æ”¯é‡‘é?â€åˆ°ä¸?–‡æç¤ºåŒ?
  * @note   
  * @retval None
  */
@@ -1550,7 +1549,7 @@ static void Fill_OverdraftAmount_In_ChineseHintArea(void)
     unsigned char segpoint;
 
     
-    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //Çå¿ÕLCDRAM_BufÖÐµÄÖÐÎÄÌáÊ¾Çø
+    Clear_ChineseHintArea_Of_LCDRAM_Buf();  //æ¸…ç©ºLCDRAM_Bufä¸?š„ä¸?–‡æç¤ºåŒ?
    
     #if (MeterType == ThreePhaseMeter)
     size = Size_12P12P;
@@ -1561,42 +1560,42 @@ static void Fill_OverdraftAmount_In_ChineseHintArea(void)
     segpoint = ChineseHintAreaStartSeg;     
 
     #if (MeterType == ThreePhaseMeter)
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[20][0],size,display);  //Í¸
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[20][0],size,display);  //é€?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[21][0],size,display);  //Ö§
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[21][0],size,display);  //æ”?
     segpoint += (size/100);   
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display);  //µç
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[23][0],size,display);  //ç”?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[34][0],size,display);  //·Ñ
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_12p12p[34][0],size,display);  //è´?
     segpoint += (size/100);  
     #else
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //µ±
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[0][0],size,display);   //å½?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //Ç°
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[1][0],size,display);   //å‰?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[20][0],size,display);  //Í¸
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[20][0],size,display);  //é€?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[21][0],size,display);  //Ö§
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[21][0],size,display);  //æ”?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[30][0],size,display);  //½ð
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[30][0],size,display);  //é‡?
     segpoint += (size/100);
-    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[31][0],size,display);  //¶î
+    InputCharacter_to_LCDRAM_Buf(segpoint,ChineseHintAreaStartCom,&ChineseHint_Char_14p14p[31][0],size,display);  //é¢?
     segpoint += (size/100);
     #endif    
 }
 
 
 /** 
- * @brief  Ìî³äÊýÖµÀàÊý¾Ýµ½Êý×ÖÇø
+ * @brief  å¡?……æ•°å€¼ç±»æ•°æ®åˆ°æ•°å­—åŒº
  * @note   
- * @param  valuepoint: Ö¸ÏòÊýÖµ´æ´¢µÄÊý×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±í×îµÍÎ»
- * @param  decimalpoint: ´ú±íÏÔÊ¾µÄÊýÖµµÄÐ¡ÊýÎ»£¬0~7  
- * @param  plusminus: ´ú±íÊÇ·ñÏÔÊ¾¸ººÅ£¬    Plus´ú±í²»ÏÔÊ¾£¬Minus´ú±íÏÔÊ¾
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬¾ßÌå²Î¼ûHIGHZERO_TYPEÃ¶¾Ù
+ * @param  valuepoint: æŒ‡å‘æ•°å€¼å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è®?4å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨æœ€ä½Žä½
+ * @param  decimalpoint: ä»£è¡¨æ˜¾ç¤ºçš„æ•°å€¼çš„å°æ•°ä½ï¼Œ0~7  
+ * @param  plusminus: ä»£è¡¨æ˜?¦æ˜¾ç¤ºè´Ÿå·ï¼?    Plusä»£è¡¨ä¸æ˜¾ç¤ºï¼ŒMinusä»£è¡¨æ˜¾ç¤º
+ * @param  displayhighzero: é«˜ä½æ˜?¦æ˜¾é›¶ï¼Œå…·ä½“å‚è§HIGHZERO_TYPEæžšä¸¾
  * @retval None
  */
 static void Fill_Value_In_NumberArea(unsigned char* valuepoint,unsigned char decimalpoint,PLUS_MINUS plusminus,HIGHZERO_TYPE displayhighzero)
@@ -1607,23 +1606,23 @@ static void Fill_Value_In_NumberArea(unsigned char* valuepoint,unsigned char dec
     unsigned char invalidzeronumber;
     unsigned char segpoint;
 
-    Clear_NumberArea_Of_LCDRAM_Buf();    //Çå³ýLCDRAM_BufµÄÊý×ÖÇø
+    Clear_NumberArea_Of_LCDRAM_Buf();    //æ¸…é™¤LCDRAM_Bufçš„æ•°å­—åŒº
 
-    for(i=0;i<4;i++)                     //¸´ÖÆÊýÖµÊý×é
+    for(i=0;i<4;i++)                     //å¤åˆ¶æ•°å€¼æ•°ç»?
     {
         valuebuf[i] = *valuepoint;
         valuepoint++;        
     }
     
-    if(displayhighzero == DisplayHighZero)                 //ÒªÇó¸ßÎ»ÏÔ0
+    if(displayhighzero == DisplayHighZero)                 //è¦æ±‚é«˜ä½æ˜?0
     {
-        displaynumber = 8;             //8¸öÊý×ÖÎ»¶¼ÏÔÊ¾
+        displaynumber = 8;             //8ä¸?•°å­—ä½éƒ½æ˜¾ç¤?
     }
-    else                               //ÒªÇó¸ßÎ»²»ÏÔ0
+    else                               //è¦æ±‚é«˜ä½ä¸æ˜¾0
     {
-        invalidzeronumber=Get_InvalidZero_Number(valuebuf,4);     //µÃµ½ÎÞÐ§Áã¸öÊý
+        invalidzeronumber=Get_InvalidZero_Number(valuebuf,4);     //å¾—åˆ°æ— æ•ˆé›¶ä¸ªæ•?
 
-        //¸ù¾ÝÐ¡ÊýÎ»£¬ÅÐ¶Ï¸öÎ»ÊýËùÔÚÎ»ÖÃ£¬ÒòÎª¼ÓÈë¼´Ê¹¸ßÎ»²»ÏÔÁã£¬µ«ÊÇ¸öÎ»Êý¿Ï¶¨ÒªÏÔÊ¾µÄ
+        //æ ¹æ®å°æ•°ä½ï¼Œåˆ¤æ–­ä¸?½æ•°æ‰€åœ¨ä½ç½?¼Œå› ä¸ºåŠ å…¥å³ä½¿é«˜ä½ä¸æ˜¾é›¶ï¼Œä½†æ˜¯ä¸?½æ•°è‚¯å®šè?æ˜¾ç¤ºçš?
         if((8-invalidzeronumber)<=(decimalpoint+1))   
         {
             displaynumber = (decimalpoint+1);
@@ -1633,31 +1632,31 @@ static void Fill_Value_In_NumberArea(unsigned char* valuepoint,unsigned char dec
             displaynumber = (8-invalidzeronumber);
         }
     }
-    segpoint = NumberAreaEndSeg+1;        //ÒòÎªÊý×ÖÊÇ¿¿ÓÒ¶ÔÆë
+    segpoint = NumberAreaEndSeg+1;        //å› ä¸ºæ•°å­—æ˜? å³å?é½?
     
     for(i=0;i<displaynumber;i++)
     {
-        if((decimalpoint == i)&&(decimalpoint != 0))     //Èç¹ûÃ»ÓÐÐ¡Êý£¬¾Í²»ÏÔÊ¾Ð¡Êýµã£¬·ñÔò¾ÍÒªÔÚÏàÓ¦Î»ÖÃ²åÈëÐ¡Êýµã
+        if((decimalpoint == i)&&(decimalpoint != 0))     //å¦‚æžœæ²¡æœ‰å°æ•°ï¼Œå°±ä¸æ˜¾ç¤ºå°æ•°ç‚¹ï¼Œå¦åˆ™å°±è¦åœ¨ç›¸åº”ä½ç½®æ’å…¥å°æ•°ç‚?
         {
             segpoint -= Size_4P36P/100;  
-            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //ÏÔÊ¾Ð¡Êýµã   
+            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //æ˜¾ç¤ºå°æ•°ç‚?   
         }
 
         segpoint -= Size_18P36P/100;
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((valuebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //ÏÔÊ¾Êý×Ö
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((valuebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //æ˜¾ç¤ºæ•°å­—
     }
 
-    if(plusminus == Minus)       //ÏÔÊ¾¸ººÅ
+    if(plusminus == Minus)       //æ˜¾ç¤ºè´Ÿå·
     {
         segpoint -= Size_8P36P/100;   
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&MinusIcon_8p36p[0][0],Size_8P36P,display);         //ÏÔÊ¾¸ººÅ
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&MinusIcon_8p36p[0][0],Size_8P36P,display);         //æ˜¾ç¤ºè´Ÿå·
     }       
 }
 
 /** 
- * @brief  ¸ù¾ÝÈÕÆÚÊý×éÌî³äÊý×ÖÇøÄÚÈÝ
+ * @brief  æ ¹æ®æ—¥æœŸæ•°ç»„å¡?……æ•°å­—åŒºå†…å®?
  * @note   
- * @param  datepoint: Ö¸ÏòÈÕÆÚ´æ´¢µÄÊý×é£¬Ä¬ÈÏ3×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÈÕ
+ * @param  datepoint: æŒ‡å‘æ—¥æœŸå­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?3å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨æ—¥
  * @retval None
  */
 static void Fill_Date_In_NumberArea(unsigned char* datepoint)
@@ -1666,30 +1665,30 @@ static void Fill_Date_In_NumberArea(unsigned char* datepoint)
     unsigned char datebuf[3];
     unsigned char segpoint;
 
-    Clear_NumberArea_Of_LCDRAM_Buf();           //Çå³ýLCDRAM_BufµÄÊý×ÖÇø
+    Clear_NumberArea_Of_LCDRAM_Buf();           //æ¸…é™¤LCDRAM_Bufçš„æ•°å­—åŒº
     
-    //¸´ÖÆÈÕÆÚµ½datebufÊý×é
+    //å¤åˆ¶æ—¥æœŸåˆ°datebufæ•°ç»„
     for(i=0;i<3;i++)
     {
         datebuf[i] = *(datepoint+i);
     }
     
-    segpoint = NumberAreaEndSeg+1;              //ÒòÎªÊý×ÖÊÇ¿¿ÓÒ¶ÔÆë
+    segpoint = NumberAreaEndSeg+1;              //å› ä¸ºæ•°å­—æ˜? å³å?é½?
 
-    for(i=0;i<6;i++)                            //ÏÔÊ¾6¸öÊý×Ö
+    for(i=0;i<6;i++)                            //æ˜¾ç¤º6ä¸?•°å­?
     {
-        if((i == 2)||(i == 4))                  //ÔÚÏàÓ¦Î»ÖÃ²åÈëÐ¡Êýµã,×÷Îª¸ô¶Ï
+        if((i == 2)||(i == 4))                  //åœ¨ç›¸åº”ä½ç½?’å…¥å°æ•°ç‚¹,ä½œä¸ºéš”æ–­
         {
             segpoint -= Size_4P36P/100;  
-            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //ÏÔÊ¾Ð¡Êýµã   
+            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //æ˜¾ç¤ºå°æ•°ç‚?   
         }
 
         segpoint -= Size_18P36P/100;
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((datebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //ÏÔÊ¾Êý×Ö
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((datebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //æ˜¾ç¤ºæ•°å­—
     }   
 }
 /** 
- * @brief  ¸ù¾ÝÊ±¼äÊý×éÌî³äÊý×ÖÇøÄÚÈÝ
+ * @brief  æ ¹æ®æ—¶é—´æ•°ç»„å¡?……æ•°å­—åŒºå†…å®?
  * @note   
  * @param  timepoint: 
  * @retval None
@@ -1700,35 +1699,35 @@ static void Fill_Time_In_NumberArea(unsigned char* timepoint)
     unsigned char timebuf[3];
     unsigned char segpoint;
 
-    Clear_NumberArea_Of_LCDRAM_Buf();           //Çå³ýLCDRAM_BufµÄÊý×ÖÇø
+    Clear_NumberArea_Of_LCDRAM_Buf();           //æ¸…é™¤LCDRAM_Bufçš„æ•°å­—åŒº
     
-    //¸´ÖÆÊ±¼äµ½datebufÊý×é
+    //å¤åˆ¶æ—¶é—´åˆ°datebufæ•°ç»„
     for(i=0;i<3;i++)
     {
         timebuf[i] = *(timepoint+i);
     }
     
-    segpoint = NumberAreaEndSeg+1;              //ÒòÎªÊý×ÖÊÇ¿¿ÓÒ¶ÔÆë
+    segpoint = NumberAreaEndSeg+1;              //å› ä¸ºæ•°å­—æ˜? å³å?é½?
 
-    for(i=0;i<6;i++)                            //ÏÔÊ¾6¸öÊý×Ö
+    for(i=0;i<6;i++)                            //æ˜¾ç¤º6ä¸?•°å­?
     {
-        if((i == 2)||(i == 4))                  //ÔÚÏàÓ¦Î»ÖÃ²åÈëÃ°ºÅ,×÷Îª¸ô¶Ï
+        if((i == 2)||(i == 4))                  //åœ¨ç›¸åº”ä½ç½?’å…¥å†’å?,ä½œä¸ºéš”æ–­
         {
             segpoint -= Size_4P36P/100;  
-            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[1][0],Size_4P36P,display);     //ÏÔÊ¾Ã°ºÅ   
+            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[1][0],Size_4P36P,display);     //æ˜¾ç¤ºå†’å·   
         }
 
         segpoint -= Size_18P36P/100;
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((timebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //ÏÔÊ¾Êý×Ö
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((timebuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //æ˜¾ç¤ºæ•°å­—
     }   
 }
 
 /** 
- * @brief  Ìî³ä½ð¶îÖµµ½Êý×ÖÇø
+ * @brief  å¡?……é‡‘é?å€¼åˆ°æ•°å­—åŒ?
  * @note   
- * @param  amountpoint:     Ö¸Ïò½ð¶î´æ´¢µÄÊý×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íµÚ1,2Î»Ð¡Êý
- * @param  plusminus:       ´ú±íÊÇ·ñÏÔÊ¾¸ººÅ£¬    plus´ú±í²»ÏÔÊ¾£¬minus´ú±íÏÔÊ¾
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬0´ú±í²»ÏÔÊ¾£¬ 1´ú±íÏÔÊ¾
+ * @param  amountpoint:     æŒ‡å‘é‡‘é?å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?4å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨ç?1,2ä½å°æ•?
+ * @param  plusminus:       ä»£è¡¨æ˜?¦æ˜¾ç¤ºè´Ÿå·ï¼?    plusä»£è¡¨ä¸æ˜¾ç¤ºï¼Œminusä»£è¡¨æ˜¾ç¤º
+ * @param  displayhighzero: é«˜ä½æ˜?¦æ˜¾é›¶ï¼?0ä»£è¡¨ä¸æ˜¾ç¤ºï¼Œ 1ä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 static void Fill_Amount_In_NumberArea(unsigned char* amountpoint,PLUS_MINUS plusminus,unsigned char displayhighzero)
@@ -1739,49 +1738,49 @@ static void Fill_Amount_In_NumberArea(unsigned char* amountpoint,PLUS_MINUS plus
     unsigned char amountbuf[3];
     unsigned char segpoint;
 
-    Clear_NumberArea_Of_LCDRAM_Buf();           //Çå³ýLCDRAM_BufµÄÊý×ÖÇø
+    Clear_NumberArea_Of_LCDRAM_Buf();           //æ¸…é™¤LCDRAM_Bufçš„æ•°å­—åŒº
     
-    //¸´ÖÆÊ±¼äµ½datebufÊý×é
+    //å¤åˆ¶æ—¶é—´åˆ°datebufæ•°ç»„
     for(i=0;i<4;i++)
     {
         amountbuf[i] = *(amountpoint+i);
     }
     
-    segpoint = NumberAreaEndSeg+1;              //ÒòÎªÊý×ÖÊÇ¿¿ÓÒ¶ÔÆë
+    segpoint = NumberAreaEndSeg+1;              //å› ä¸ºæ•°å­—æ˜? å³å?é½?
 
-    if(displayhighzero == DisplayHighZero)      //ÒªÇó¸ßÎ»ÏÔ0
+    if(displayhighzero == DisplayHighZero)      //è¦æ±‚é«˜ä½æ˜?0
     {
-        displaynumber = 8;                      //8¸öÊý×ÖÎ»¶¼ÏÔÊ¾
+        displaynumber = 8;                      //8ä¸?•°å­—ä½éƒ½æ˜¾ç¤?
     }
-    else                                        //ÒªÇó¸ßÎ»²»ÏÔ0
+    else                                        //è¦æ±‚é«˜ä½ä¸æ˜¾0
     {
-        invalidzeronumber=Get_InvalidZero_Number(amountbuf,4);     //µÃµ½ÎÞÐ§Áã¸öÊý
+        invalidzeronumber=Get_InvalidZero_Number(amountbuf,4);     //å¾—åˆ°æ— æ•ˆé›¶ä¸ªæ•?
 
-        //¹Ì¶¨2Î»Ð¡Êý£¬ËùÒÔ×îÉÙÏÔÊ¾3Î»Ð¡Êý
+        //å›ºå®š2ä½å°æ•°ï¼Œæ‰€ä»¥æœ€å°‘æ˜¾ç¤?3ä½å°æ•?
         if(invalidzeronumber>=5)   
         {
             displaynumber = 3;
         }
         else
         {
-            displaynumber = (8-invalidzeronumber);//ÆÁ±ÎÎÞÐ§Áã
+            displaynumber = (8-invalidzeronumber);//å±è”½æ— æ•ˆé›?
         }
     }
 
-    for(i=0;i<displaynumber;i++)                //ÏÔÊ¾6¸öÊý×Ö
+    for(i=0;i<displaynumber;i++)                //æ˜¾ç¤º6ä¸?•°å­?
     {
-        if(i == 2)                              //ÔÚÏàÓ¦Î»ÖÃ²åÈëÐ¡Êýµã
+        if(i == 2)                              //åœ¨ç›¸åº”ä½ç½?’å…¥å°æ•°ç‚¹
         {
             segpoint -= Size_4P36P/100;  
-            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //ÏÔÊ¾Ð¡Êýµã
+            InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&Point_4p36p[0][0],Size_4P36P,display);     //æ˜¾ç¤ºå°æ•°ç‚?
         }
         segpoint -= Size_18P36P/100;
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((amountbuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //ÏÔÊ¾Êý×Ö
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&NumberArea_char_18p36p[((amountbuf[i/2]>>((i%2)*4))&0x0f)][0],Size_18P36P,display); //æ˜¾ç¤ºæ•°å­—
     } 
-    if(plusminus == Minus)                      //ÏÔÊ¾¸ººÅ
+    if(plusminus == Minus)                      //æ˜¾ç¤ºè´Ÿå·
     {
         segpoint -= Size_8P36P/100;   
-        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&MinusIcon_8p36p[0][0],Size_8P36P,display);     //ÏÔÊ¾¸ººÅ   
+        InputCharacter_to_LCDRAM_Buf(segpoint,NumberAreaStartCom,&MinusIcon_8p36p[0][0],Size_8P36P,display);     //æ˜¾ç¤ºè´Ÿå·   
     }
 
 }
@@ -1790,7 +1789,7 @@ static void Fill_Amount_In_NumberArea(unsigned char* amountpoint,PLUS_MINUS plus
 
 
 /** 
- * @brief  Ìî³äkwhµ½µ¥Î»Çø
+ * @brief  å¡?……kwhåˆ°å•ä½åŒº
  * @note   
  * @retval None
  */
@@ -1799,10 +1798,10 @@ static void  Fill_Kwh_In_UnitArea(void)
     unsigned char segpoint;
     unsigned int size;
 
-    Clear_UnitArea_Of_LCDRAM_Buf();             //Çå³ýLCDRAM_BufµÄµ¥Î»Çø
+    Clear_UnitArea_Of_LCDRAM_Buf();             //æ¸…é™¤LCDRAM_Bufçš„å•ä½åŒº
 
     size = Size_8P12P;
-    //ÒòÎªÊÇ¿¿ÓÒ£¬ËùÒÔÒªµ¹×ÅÐ´
+    //å› ä¸ºæ˜? å³ï¼Œæ‰€ä»¥è?å€’ç€å†?
     segpoint = UnitAreaEndSeg+1;
     segpoint -= (size/100);
     InputCharacter_to_LCDRAM_Buf(segpoint,UnitAreaStartCom,&UintArea_char_8p12p[4][0],size,display);    //h   
@@ -1814,7 +1813,7 @@ static void  Fill_Kwh_In_UnitArea(void)
 }
 
 /** 
- * @brief  Ìî³äkvarhµ½µ¥Î»Çø
+ * @brief  å¡?……kvarhåˆ°å•ä½åŒº
  * @note   
  * @retval None
  */
@@ -1823,7 +1822,7 @@ static void Fill_kvah_In_UnitArea(void)
     unsigned char segpoint;
     unsigned int size;
 
-    Clear_UnitArea_Of_LCDRAM_Buf();             //Çå³ýLCDRAM_BufµÄµ¥Î»Çø
+    Clear_UnitArea_Of_LCDRAM_Buf();             //æ¸…é™¤LCDRAM_Bufçš„å•ä½åŒº
 
     size = Size_25P12P;
     segpoint = UnitAreaEndSeg+1;
@@ -1832,7 +1831,7 @@ static void Fill_kvah_In_UnitArea(void)
 }
 
 /** 
- * @brief  Ìî³ä¡°Ôª¡±µ½µ¥Î»Çø
+ * @brief  å¡?……â€œå…ƒâ€åˆ°å•ä½åŒ?
  * @note   
  * @retval None
  */
@@ -1841,143 +1840,143 @@ static void Fill_Yuan_In_UnitArea(void)
     unsigned char segpoint;
     unsigned int size;
 
-    Clear_UnitArea_Of_LCDRAM_Buf();             //Çå³ýLCDRAM_BufµÄµ¥Î»Çø
+    Clear_UnitArea_Of_LCDRAM_Buf();             //æ¸…é™¤LCDRAM_Bufçš„å•ä½åŒº
 
     size = Size_12P12P;
     segpoint = UnitAreaEndSeg+1;
     segpoint -= (size/100);   
-    InputCharacter_to_LCDRAM_Buf(segpoint,UnitAreaStartCom,&UintArea_char_12p12p[1][0],size,display);    //Ôª   
+    InputCharacter_to_LCDRAM_Buf(segpoint,UnitAreaStartCom,&UintArea_char_12p12p[1][0],size,display);    //å…?   
 }
 
-/*¶¨ÒåÈ«¾Öº¯Êý----------------------------------------------------------------*/
-///¶¨Òå¿ÉÓÃÓÚÍâ²¿ÎÄ¼þµÄº¯Êý
-/*µç±íÏà¹ØÏÔÊ¾º¯Êý------------------------*/
+/*å®šä¹‰å…¨å±€å‡½æ•°----------------------------------------------------------------*/
+///å®šä¹‰å?”¨äºŽå?éƒ¨æ–‡ä»¶çš„å‡½æ•°
+/*ç”µè¡¨ç›¸å…³æ˜¾ç¤ºå‡½æ•°------------------------*/
 
 /** 
- * @brief  ÏÔÊ¾µçÁ¿º¯Êý
+ * @brief  æ˜¾ç¤ºç”µé‡å‡½æ•°
  * @note  
- * @param  phase: ´ú±íÏàÎ» ¾ßÌå²Î¼ûPHASE_TYPEÃ¶¾Ù 
- * @param  engerytype: µçÁ¿ÖÖÀà£¬¾ßÌå²Î¼ûENERGY_TYPEÃ¶¾Ù
- * @param  date:    ÈÕÆÚ£¬ÔÝÊ±Ö§³Ö0~12£¬0±íÊ¾µ±Ç°  ÆäËû´ú±íÉÏxÔÂ
- * @param  rate:    ·ÑÂÊ 0~12£¬ÆäÖÐ0´ú±í×Ü£¬ÆäËû´ú±íTx
- * @param  engerypoint: Ö¸ÏòµçÁ¿´æ´¢µÄÊý×é£¬Ä¬ÈÏ6×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íµÚ3,4Ð¡Êý
- * @param  decimalpoint: ´ú±íÏÔÊ¾µÄµçÁ¿ÏÔÊ¾¼¸Î»Ð¡Êý£¬0~4
- * @param  plusminus: ´ú±íÊÇ·ñÏÔÊ¾¸ººÅ£¬    plus´ú±í²»ÏÔÊ¾£¬minus´ú±íÏÔÊ¾
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬¾ßÌå²Î¼ûHIGHZERO_TYPEÃ¶¾Ù
+ * @param  phase: ä»£è¡¨ç›¸ä½ å…·ä½“å‚è?PHASE_TYPEæžšä¸¾ 
+ * @param  engerytype: ç”µé‡ç§ç±»ï¼Œå…·ä½“å‚è§ENERGY_TYPEæžšä¸¾
+ * @param  date:    æ—¥æœŸï¼Œæš‚æ—¶æ”¯æŒ?0~12ï¼?0è¡¨ç¤ºå½“å‰  å…¶ä»–ä»£è¡¨ä¸Šxæœ?
+ * @param  rate:    è´¹çŽ‡ 0~12ï¼Œå…¶ä¸?0ä»£è¡¨æ€»ï¼Œå…¶ä»–ä»£è¡¨Tx
+ * @param  engerypoint: æŒ‡å‘ç”µé‡å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?6å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨ç?3,4å°æ•°
+ * @param  decimalpoint: ä»£è¡¨æ˜¾ç¤ºçš„ç”µé‡æ˜¾ç¤ºå‡ ä½å°æ•°ï¼Œ0~4
+ * @param  plusminus: ä»£è¡¨æ˜?¦æ˜¾ç¤ºè´Ÿå·ï¼?    plusä»£è¡¨ä¸æ˜¾ç¤ºï¼Œminusä»£è¡¨æ˜¾ç¤º
+ * @param  displayhighzero: é«˜ä½æ˜?¦æ˜¾é›¶ï¼Œå…·ä½“å‚è§HIGHZERO_TYPEæžšä¸¾
  * @retval None
  */
 extern void Display_Engery(PHASE_TYPE phase,ENERGY_TYPE engerytype,unsigned char date,unsigned char rate,unsigned char* engerypoint,unsigned char decimalpoint,PLUS_MINUS plusminus,HIGHZERO_TYPE displayhighzero)
 {
     unsigned char valuebuf[4];
 
-    if((date>12)||(decimalpoint>4)||rate>19)    //ÔÂ·Ý³¬¹ý12ÔÂ£¬Ð¡Êýµã³¬¹ý4Î»»òÕß·ÑÂÊ³¬¹ý19²»Ö§³Ö£¬·µ»Ø
+    if((date>12)||(decimalpoint>4)||rate>19)    //æœˆä»½è¶…è¿‡12æœˆï¼Œå°æ•°ç‚¹è¶…è¿?4ä½æˆ–è€…è´¹çŽ‡è¶…è¿?19ä¸æ”¯æŒï¼Œè¿”å›ž
     {
         return;
     }
 
-    //¸ù¾ÝÏàÎ»ºÍµçÁ¿ÖÖÀàºÍ·ÑÂÊÅÐ¶ÏÒªÌî³äµÄÖÐÎÄÌáÊ¾ÄÚÈÝ
+    //æ ¹æ®ç›¸ä½å’Œç”µé‡ç?ç±»å’Œè´¹çŽ‡åˆ¤æ–­è¦å¡«å……çš„ä¸?–‡æç¤ºå†…å?
     Fill_Engery_In_ChineseHintArea(phase,engerytype,date,rate);
     
-    //¸ù¾ÝµçÁ¿Êý×éºÍÆäËüÐÎ²ÎÌî³äÊý×ÖÇøÄÚÈÝ
+    //æ ¹æ®ç”µé‡æ•°ç»„å’Œå…¶å®ƒå½¢å‚å¡«å……æ•°å­—åŒºå†…å?
     Adjust_DecimalpointOfValue(engerypoint,valuebuf,decimalpoint);
     Fill_Value_In_NumberArea(valuebuf,decimalpoint,plusminus,displayhighzero);
     
-    if((engerytype == CombinedActivePowerEnergy)||(engerytype == PositiveActivePowerEnergy)||(engerytype == ReverseActivePowerEnergy))     //ÓÐ¹¦Àà
+    if((engerytype == CombinedActivePowerEnergy)||(engerytype == PositiveActivePowerEnergy)||(engerytype == ReverseActivePowerEnergy))     //æœ‰åŠŸç±?
     {
-        //Ìî³äKwhµ½µ¥Î»Çø
+        //å¡?……Kwhåˆ°å•ä½åŒº
         Fill_Kwh_In_UnitArea();
     }
     else
     {
-        //Ìî³äkvahµ½µ¥Î»Çø
+        //å¡?……kvahåˆ°å•ä½åŒº
         Fill_kvah_In_UnitArea();        
     }
 
 
-    Refresh_ChineseHintArea_of_LCD_DDRAM();         //Ë¢ÐÂµ½LCDµÄÖÐÎÄÌáÊ¾Çø
-    Refresh_NumberArea_of_LCD_DDRAM();              //Ë¢ÐÂµ½LCDµÄÊý×ÖÌáÊ¾Çø
-    Refresh_UnitArea_of_LCD_DDRAM();                //Ë¢ÐÂµ½LCDµÄµ¥Î»Çø
+    Refresh_ChineseHintArea_of_LCD_DDRAM();         //åˆ·æ–°åˆ°LCDçš„ä¸­æ–‡æç¤ºåŒº
+    Refresh_NumberArea_of_LCD_DDRAM();              //åˆ·æ–°åˆ°LCDçš„æ•°å­—æç¤ºåŒº
+    Refresh_UnitArea_of_LCD_DDRAM();                //åˆ·æ–°åˆ°LCDçš„å•ä½åŒº
 }
 
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°ÈÕÆÚ
+ * @brief  æ˜¾ç¤ºå½“å‰æ—¥æœŸ
  * @note   
- * @param  datepoint: Ö¸ÏòÈÕÆÚ´æ´¢µÄÊý×é£¬Ä¬ÈÏ3×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÈÕ
+ * @param  datepoint: æŒ‡å‘æ—¥æœŸå­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?3å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨æ—¥
  * @retval None
  */
 extern void Display_CurrentDate(unsigned char* datepoint)
 {
 
-    //Ìî³ä¡°µ±Ç°ÈÕÆÚ¡±µ½ÖÐÎÄÌáÊ¾ÄÚÈÝ
+    //å¡?……â€œå½“å‰æ—¥æœŸâ€åˆ°ä¸?–‡æç¤ºå†…å?
     Fill_CurrentDate_In_ChineseHintArea();
-    //¸ù¾ÝÈÕÆÚÊý×éÌî³äÊý×ÖÇøÄÚÈÝ
+    //æ ¹æ®æ—¥æœŸæ•°ç»„å¡?……æ•°å­—åŒºå†…å®?
     Fill_Date_In_NumberArea(datepoint);
 
-    Refresh_ChineseHintArea_of_LCD_DDRAM();         //Ë¢ÐÂµ½LCDµÄÖÐÎÄÌáÊ¾Çø
-    Refresh_NumberArea_of_LCD_DDRAM();              //Ë¢ÐÂµ½LCDµÄÊý×ÖÌáÊ¾Çø
-    Refresh_UnitArea_of_LCD_DDRAM();                //Ë¢ÐÂµ½LCDµÄµ¥Î»Çø(²»ÄÜÂ©£¬È·±£µ¥Î»ÇøÇå¿Õ)
+    Refresh_ChineseHintArea_of_LCD_DDRAM();         //åˆ·æ–°åˆ°LCDçš„ä¸­æ–‡æç¤ºåŒº
+    Refresh_NumberArea_of_LCD_DDRAM();              //åˆ·æ–°åˆ°LCDçš„æ•°å­—æç¤ºåŒº
+    Refresh_UnitArea_of_LCD_DDRAM();                //åˆ·æ–°åˆ°LCDçš„å•ä½åŒº(ä¸èƒ½æ¼ï¼Œç¡?¿å•ä½åŒºæ¸…ç©?)
 }
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Ê±¼ä
+ * @brief  æ˜¾ç¤ºå½“å‰æ—¶é—´
  * @note   
- * @param  timepoint: Ö¸ÏòÊ±¼ä´æ´¢µÄÊý×é£¬Ä¬ÈÏ3×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÃë
+ * @param  timepoint: æŒ‡å‘æ—¶é—´å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?3å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨ç?
  * @retval None
  */
 extern void Display_CurrentTime(unsigned char* timepoint)
 {
-    //Ìî³ä¡°µ±Ç°Ê±¼ä¡±µ½ÖÐÎÄÌáÊ¾ÄÚÈÝ
+    //å¡?……â€œå½“å‰æ—¶é—´â€åˆ°ä¸?–‡æç¤ºå†…å?
     Fill_CurrentTime_In_ChineseHintArea();
-    //¸ù¾ÝÊ±¼äÊý×éÌî³äÊý×ÖÇøÄÚÈÝ
+    //æ ¹æ®æ—¶é—´æ•°ç»„å¡?……æ•°å­—åŒºå†…å®?
     Fill_Time_In_NumberArea(timepoint);
 
-    Refresh_ChineseHintArea_of_LCD_DDRAM();         //Ë¢ÐÂµ½LCDµÄÖÐÎÄÌáÊ¾Çø
-    Refresh_NumberArea_of_LCD_DDRAM();              //Ë¢ÐÂµ½LCDµÄÊý×ÖÌáÊ¾Çø
-    Refresh_UnitArea_of_LCD_DDRAM();                //Ë¢ÐÂµ½LCDµÄµ¥Î»Çø(²»ÄÜÂ©£¬È·±£µ¥Î»ÇøÇå¿Õ)
+    Refresh_ChineseHintArea_of_LCD_DDRAM();         //åˆ·æ–°åˆ°LCDçš„ä¸­æ–‡æç¤ºåŒº
+    Refresh_NumberArea_of_LCD_DDRAM();              //åˆ·æ–°åˆ°LCDçš„æ•°å­—æç¤ºåŒº
+    Refresh_UnitArea_of_LCD_DDRAM();                //åˆ·æ–°åˆ°LCDçš„å•ä½åŒº(ä¸èƒ½æ¼ï¼Œç¡?¿å•ä½åŒºæ¸…ç©?)
 }
 
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Ê£Óà½ð¶î
- * @note   ÈýÏàÏÔÊ¾¡°µ±Ç°Ê£Óàµç·Ñ¡± µ¥ÏàÏÔÊ¾¡°µ±Ç°Ê£Óà½ð¶î¡±
- * @param  amountpoint: Ö¸ÏòÊ£Óà½ð¶î´æ´¢µÄÊý×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÐ¡Êý1¡¢2Î»
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬0´ú±í²»ÏÔÊ¾£¬ 1´ú±íÏÔÊ¾
+ * @brief  æ˜¾ç¤ºå½“å‰å‰©ä½™é‡‘é?
+ * @note   ä¸‰ç›¸æ˜¾ç¤ºâ€œå½“å‰å‰©ä½™ç”µè´¹â€? å•ç›¸æ˜¾ç¤ºâ€œå½“å‰å‰©ä½™é‡‘é¢â€?
+ * @param  amountpoint: æŒ‡å‘å‰©ä½™é‡‘é?å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?4å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨å°æ•?1ã€?2ä½?
+ * @param  displayhighzero: é«˜ä½æ˜?¦æ˜¾é›¶ï¼?0ä»£è¡¨ä¸æ˜¾ç¤ºï¼Œ 1ä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 extern void Display_RemainingAmount(unsigned char* amountpoint,unsigned char displayhighzero)
 {
-    //Ìî³ä¡°µ±Ç°Ê£Óà½ð¶î¡±»òÕß¡°µ±Ç°Ê£Óàµç·Ñ¡±µ½ÖÐÎÄÌáÊ¾ÄÚÈÝ
+    //å¡?……â€œå½“å‰å‰©ä½™é‡‘é¢â€æˆ–è€…â€œå½“å‰å‰©ä½™ç”µè´¹â€åˆ°ä¸?–‡æç¤ºå†…å?
     Fill_RemainingAmount_In_ChineseHintArea();
-    //¸ù¾ÝÊ£Óà½ð¶îÊý×éºÍÆäËü²ÎÊýÌî³äÊý×ÖÇøÄÚÈÝ
+    //æ ¹æ®å‰©ä½™é‡‘é?æ•°ç»„å’Œå…¶å®ƒå‚æ•°å¡«å……æ•°å­—åŒºå†…å?
     Fill_Amount_In_NumberArea(amountpoint,Plus,displayhighzero);
-    //Ìî³ä¡°Ôª¡±µ½µ¥Î»Çø
+    //å¡?……â€œå…ƒâ€åˆ°å•ä½åŒ?
     Fill_Yuan_In_UnitArea();
 
-    Refresh_ChineseHintArea_of_LCD_DDRAM();         //Ë¢ÐÂµ½LCDµÄÖÐÎÄÌáÊ¾Çø
-    Refresh_NumberArea_of_LCD_DDRAM();              //Ë¢ÐÂµ½LCDµÄÊý×ÖÌáÊ¾Çø
-    Refresh_UnitArea_of_LCD_DDRAM();                //Ë¢ÐÂµ½LCDµÄµ¥Î»Çø(²»ÄÜÂ©£¬È·±£µ¥Î»ÇøÇå¿Õ)
+    Refresh_ChineseHintArea_of_LCD_DDRAM();         //åˆ·æ–°åˆ°LCDçš„ä¸­æ–‡æç¤ºåŒº
+    Refresh_NumberArea_of_LCD_DDRAM();              //åˆ·æ–°åˆ°LCDçš„æ•°å­—æç¤ºåŒº
+    Refresh_UnitArea_of_LCD_DDRAM();                //åˆ·æ–°åˆ°LCDçš„å•ä½åŒº(ä¸èƒ½æ¼ï¼Œç¡?¿å•ä½åŒºæ¸…ç©?)
 }
 
 /** 
- * @brief  ÏÔÊ¾µ±Ç°Í¸Ö§½ð¶î
- * @note   ÈýÏàÏÔÊ¾¡°µ±Ç°Í¸Ö§µç·Ñ¡± µ¥ÏàÏÔÊ¾¡°µ±Ç°Í¸Ö§½ð¶î¡±
- * @param  amountpoint: Ö¸ÏòÍ¸Ö§½ð¶î´æ´¢µÄÊý×é£¬Ä¬ÈÏ4×Ö½ÚBCDÂë£¬×îµÍ×Ö½Ú´ú±íÐ¡Êý1¡¢2Î»
- * @param  displayhighzero: ¸ßÎ»ÊÇ·ñÏÔÁã£¬0´ú±í²»ÏÔÊ¾£¬ 1´ú±íÏÔÊ¾
+ * @brief  æ˜¾ç¤ºå½“å‰é€æ”¯é‡‘é?
+ * @note   ä¸‰ç›¸æ˜¾ç¤ºâ€œå½“å‰é€æ”¯ç”µè´¹â€? å•ç›¸æ˜¾ç¤ºâ€œå½“å‰é€æ”¯é‡‘é?â€?
+ * @param  amountpoint: æŒ‡å‘é€æ”¯é‡‘é?å­˜å‚¨çš„æ•°ç»„ï¼Œé»˜è?4å­—èŠ‚BCDç ï¼Œæœ€ä½Žå­—èŠ‚ä»£è¡¨å°æ•?1ã€?2ä½?
+ * @param  displayhighzero: é«˜ä½æ˜?¦æ˜¾é›¶ï¼?0ä»£è¡¨ä¸æ˜¾ç¤ºï¼Œ 1ä»£è¡¨æ˜¾ç¤º
  * @retval None
  */
 extern void Display_OverdraftAmount(unsigned char* amountpoint,unsigned char displayhighzero)
 {
-    //Ìî³ä¡°µ±Ç°Í¸Ö§½ð¶î¡±»òÕß¡°µ±Ç°Í¸Ö§µç·Ñ¡±µ½ÖÐÎÄÌáÊ¾ÄÚÈÝ
+    //å¡?……â€œå½“å‰é€æ”¯é‡‘é?â€æˆ–è€…â€œå½“å‰é€æ”¯ç”µè´¹â€åˆ°ä¸?–‡æç¤ºå†…å?
     Fill_OverdraftAmount_In_ChineseHintArea();
-    //¸ù¾ÝÍ¸Ö§½ð¶îÊý×éºÍÆäËü²ÎÊýÌî³äÊý×ÖÇøÄÚÈÝ
+    //æ ¹æ®é€æ”¯é‡‘é?æ•°ç»„å’Œå…¶å®ƒå‚æ•°å¡«å……æ•°å­—åŒºå†…å?
     Fill_Amount_In_NumberArea(amountpoint,Minus,displayhighzero);
-    //Ìî³ä¡°Ôª¡±µ½µ¥Î»Çø
+    //å¡?……â€œå…ƒâ€åˆ°å•ä½åŒ?
     Fill_Yuan_In_UnitArea();
 
-    Refresh_ChineseHintArea_of_LCD_DDRAM();         //Ë¢ÐÂµ½LCDµÄÖÐÎÄÌáÊ¾Çø
-    Refresh_NumberArea_of_LCD_DDRAM();              //Ë¢ÐÂµ½LCDµÄÊý×ÖÌáÊ¾Çø
-    Refresh_UnitArea_of_LCD_DDRAM();                //Ë¢ÐÂµ½LCDµÄµ¥Î»Çø(²»ÄÜÂ©£¬È·±£µ¥Î»ÇøÇå¿Õ)    
+    Refresh_ChineseHintArea_of_LCD_DDRAM();         //åˆ·æ–°åˆ°LCDçš„ä¸­æ–‡æç¤ºåŒº
+    Refresh_NumberArea_of_LCD_DDRAM();              //åˆ·æ–°åˆ°LCDçš„æ•°å­—æç¤ºåŒº
+    Refresh_UnitArea_of_LCD_DDRAM();                //åˆ·æ–°åˆ°LCDçš„å•ä½åŒº(ä¸èƒ½æ¼ï¼Œç¡?¿å•ä½åŒºæ¸…ç©?)    
 }
 
 /*end-------------------------------------------------------------------------*/
