@@ -120,6 +120,7 @@ extern void Display_RemainingAmount(unsigned char* amountpoint,unsigned char dis
  */
 extern void Display_OverdraftAmount(unsigned char* amountpoint,unsigned char displayhighzero);
 
-
+extern void RollDiplay_ChineseHintArea(void);
+extern void Display_QuadrantStatus(unsigned char number);
 #endif
 /*end------------------------------------------------------------------------*/

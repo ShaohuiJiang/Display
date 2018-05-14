@@ -572,6 +572,7 @@ const GBK_CHARADDRESS_STRUCT  charaddressbuf[GBKNumber] =
     {0x004E,&ChineseHint_Char_6p12p[14][0]},     //N
     {0x004F,&ChineseHint_Char_6p12p[15][0]},     //O
     {0x0053,&ChineseHint_Char_6p12p[16][0]},     //S
+    {0x0020,&ChineseHint_Char_6p12p[17][0]},     //空格    
 
     {0xB5B1,&ChineseHint_Char_12p12p[0][0]},    //当
     {0xC7B0,&ChineseHint_Char_12p12p[1][0]},    //前
@@ -647,6 +648,7 @@ const GBK_CHARADDRESS_STRUCT  charaddressbuf[GBKNumber] =
     {0x004E,&ChineseHint_Char_7p14p[14][0]},     //N
     {0x004F,&ChineseHint_Char_7p14p[15][0]},     //O
     {0x0053,&ChineseHint_Char_7p14p[16][0]},     //S
+    {0x0020,&ChineseHint_Char_7p14p[17][0]},     //空格    
 
     {0xB5B1,&ChineseHint_Char_14p14p[0][0]},    //当
     {0xC7B0,&ChineseHint_Char_14p14p[1][0]},    //前
